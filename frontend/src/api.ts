@@ -142,9 +142,19 @@ export async function fetchCity(): Promise<City> {
   }
 }
 
+async function inflate(b64: string): Promise<ArrayBuffer> {
+  const stream = new Blob([decode(b64)]).stream().pipeThrough(new DecompressionStream('deflate'))
+  return new Response(stream).arrayBuffer()
+}
+
 export async function runSimulation(p: ScenarioParams): Promise<SimResult> {
   const raw = await request<any>('/simulate', { method: 'POST', body: JSON.stringify(p) })
-  return { ...raw, frames: raw.frames.map((f: string) => new Uint16Array(decode(f))) }
+  const [n, rows, cols] = raw.frames_shape as [number, number, number]
+  const all = new Uint16Array(await inflate(raw.frames_z))
+  const size = rows * cols
+  const frames = Array.from({ length: n }, (_, i) => all.subarray(i * size, (i + 1) * size))
+  delete raw.frames_z
+  return { ...raw, frames }
 }
 
 export const DEFAULT_PARAMS: ScenarioParams = {
@@ -206,7 +216,21 @@ export interface EnsembleResult {
   wards: { id: number; name: string; p_critical: number; eta_median_min: number | null; eta_p10_min: number | null }[]
 }
 
-export const runEnsemble = (body: {
+const median = (a: number[]) => {
+  const s = [...a].sort((x, y) => x - y)
+  const m = s.length >> 1
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2
+}
+const percentile = (a: number[], q: number) => {
+  const s = [...a].sort((x, y) => x - y)
+  const pos = (s.length - 1) * q
+  const lo = Math.floor(pos)
+  return s[lo] + (s[Math.min(lo + 1, s.length - 1)] - s[lo]) * (pos - lo)
+}
+
+// Fetch ensemble rain, run members in parallel batches (one serverless call each),
+// then P(ward critical) = members reaching critical / N.
+export async function runEnsemble(body: {
   model: string
   hours: number
   peak_factor: number
@@ -214,7 +238,34 @@ export const runEnsemble = (body: {
   lake_fill: number
   antecedent_wetness: number
   blocked_drains: number[]
-}) => request<EnsembleResult>('/ensemble', { method: 'POST', body: JSON.stringify(body) })
+}): Promise<EnsembleResult> {
+  const ens = await request<{ source: string; times: string[]; members: number[][]; fetched_at: string }>(
+    '/ensemble/members', { method: 'POST', body: JSON.stringify({ model: body.model, hours: body.hours }) })
+  const { model: _m, hours: _h, ...domain } = body
+  const BATCHES = 4
+  const size = Math.ceil(ens.members.length / BATCHES)
+  const chunks = Array.from({ length: BATCHES }, (_, i) => ens.members.slice(i * size, (i + 1) * size)).filter((c) => c.length)
+  const parts = await Promise.all(chunks.map((members) =>
+    request<{ etas: Record<string, number | null>[]; wards: Record<string, string> }>(
+      '/ensemble/run', { method: 'POST', body: JSON.stringify({ members, ...domain }) })))
+  const etas = parts.flatMap((p) => p.etas)
+  const names = parts[0].wards
+  const n = etas.length
+  const wards = Object.keys(names).map((id) => {
+    const hit = etas.map((e) => e[id]).filter((v): v is number => v !== null && v !== undefined)
+    return {
+      id: Number(id), name: names[id], p_critical: hit.length / n,
+      eta_median_min: hit.length ? median(hit) : null,
+      eta_p10_min: hit.length ? percentile(hit, 0.1) : null,
+    }
+  })
+  return {
+    n_members: n, source: ens.source, fetched_at: ens.fetched_at, peak_factor: body.peak_factor, times: ens.times,
+    member_totals_mm: ens.members.map((m) => m.reduce((a, b) => a + b, 0) * body.peak_factor),
+    member_hourly_mean: ens.times.map((_, i) => ens.members.reduce((a, m) => a + (m[i] ?? 0), 0) / n),
+    wards,
+  }
+}
 
 // ---------------------------------------------------------------- AI
 export interface AIMeta {
@@ -263,8 +314,14 @@ export interface BulletinResult {
   ai: AIMeta
 }
 
-export const aiBulletin = (run_id: string, ensemble?: EnsembleResult | null) =>
-  request<BulletinResult>('/ai/bulletin', {
-    method: 'POST',
-    body: JSON.stringify({ run_id, ensemble: ensemble ?? null }),
-  })
+export const aiBulletin = (r: SimResult, ensemble?: EnsembleResult | null) => {
+  // Only what the bulletin needs; the server builds the model's facts from it.
+  const result = {
+    params: r.params, critical_wards: r.critical_wards, total_rain_mm: r.total_rain_mm,
+    rain_mm_hr: r.rain_mm_hr, pop_critical: r.pop_critical, pop_warning: r.pop_warning, lakes: r.lakes,
+    wards: r.wards.map(({ id, name, peak_status, eta_min, warning_eta_min, pop_critical_peak }) =>
+      ({ id, name, peak_status, eta_min, warning_eta_min, pop_critical_peak })),
+  }
+  const ens = ensemble ? { n_members: ensemble.n_members, wards: ensemble.wards } : null
+  return request<BulletinResult>('/ai/bulletin', { method: 'POST', body: JSON.stringify({ result, ensemble: ens }) })
+}

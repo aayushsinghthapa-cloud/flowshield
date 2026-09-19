@@ -1,0 +1,5 @@
+.venv
+backend/pipeline/cache
+backend/tests
+**/__pycache__
+*.pdf

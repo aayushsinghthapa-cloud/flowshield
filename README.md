@@ -89,27 +89,30 @@ Copernicus GLO-30 DEM · ESA WorldCover 2021 · OpenStreetMap (lakes, drains) ·
 ## Run locally
 
 ```bash
-# Backend (Python 3.11)
-python3.11 -m venv .venv && .venv/bin/pip install -r backend/requirements.txt
+# Backend (Python 3.11+)
+python3.11 -m venv .venv && .venv/bin/pip install -r backend/requirements-dev.txt
 cp .env.example .env        # add GEMINI_API_KEY (free at aistudio.google.com)
-cd backend && ../.venv/bin/uvicorn api.main:app --port 8000
+.venv/bin/uvicorn api.index:app --port 8000
 
-# Frontend (dev)
+# Frontend (dev, proxies /api to :8000)
 cd frontend && npm install && npm run dev      # http://localhost:5173
 
 # Tests
 cd backend && ../.venv/bin/python -m pytest -q
 
-# Rebuild the city data from source (optional; needs requirements-pipeline.txt)
+# Rebuild the city data from source (optional)
+.venv/bin/pip install -r backend/requirements-pipeline.txt
 cd backend && ../.venv/bin/python -m pipeline.build_city
 ```
 
-**Deploy (free Hugging Face Space, Gradio SDK, CPU basic):**
-```bash
-.venv/bin/pip install huggingface_hub
-HF_TOKEN=<write-token> .venv/bin/python deploy/push_hf.py <hf-username>/flowshield --set-secret
-```
-[deploy/hf_app.py](deploy/hf_app.py) becomes the Space's `app.py`. It runs the same FastAPI app, which serves the API and the pre-built dashboard on port 7860. A [Dockerfile](Dockerfile) is also provided for Docker hosts.
+## Deploy (free: Vercel Hobby)
+
+[vercel.json](vercel.json) builds the dashboard as static files and deploys the FastAPI app as one Python function ([api/index.py](api/index.py)) serving `/api/*`.
+1. On vercel.com, choose **Add New → Project** and import this GitHub repo. Keep the defaults, since `vercel.json` sets everything.
+2. Under **Environment Variables**, add `GEMINI_API_KEY`.
+3. Click **Deploy**.
+
+The ensemble is split by the browser into 4 parallel function calls. A [Dockerfile](Dockerfile) is also included for any Docker host (`uvicorn server.main:app`).
 
 ## Boilerplate and libraries used
 

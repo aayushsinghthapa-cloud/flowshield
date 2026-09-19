@@ -24,7 +24,7 @@ export default function BulletinPanel({ result, ensemble }: { result: SimResult;
     setLoading(true)
     setError(null)
     try {
-      setB(await aiBulletin(result.run_id, ensemble))
+      setB(await aiBulletin(result, ensemble))
     } catch (e) {
       setError((e as Error).message)
     } finally {

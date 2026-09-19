@@ -171,3 +171,7 @@ Roles (3–4): **Model lead** (pipeline + engine + tests + model.md, owns the ma
 - Compare tab (≤4 runs: summary table, critical-area and people-at-critical overlays, per-ward ETA table). Model tab (KaTeX equations 1–8, volume budget chart, error + Δt chart, parameters, verified properties, limitations).
 - **Demo story found:** blocking the 14 OSM drains near **Ejipura** flips it Safe → **Critical at 2 h 12 m** under the heavy preset (385 → 1,107 people in critical cells). Blocks near Bellanduru/HSR change little (not the bottleneck).
 - Fixed: run race (StrictMode double initial run overwrote later runs), playback now stops on the last frame, lake chart >100% labelled as spilling.
+
+**20 Sep 00:00–02:30 · Deployment pivot (HF → Vercel)**
+- Hugging Face now returns 402: Gradio and Docker Spaces on free CPU need PRO (only Static Spaces are free). Moved to **Vercel Hobby** (free, no card, 300 s functions).
+- Serverless changes: depth frames sent as one zlib stream (response 4.5 MB → 1.1 MB, under Vercel's 4.5 MB cap). Bulletin is stateless (the client sends the trimmed result). The ensemble is split into `/ensemble/members` + 4 parallel `/ensemble/run` batches, aggregated in the browser. `backend/api` was renamed to `backend/server` (clash with Vercel's root `api/`). `"framework": null` stops FastAPI auto-detection from swallowing static routes. 12/12 tests pass.

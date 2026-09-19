@@ -118,3 +118,10 @@ def test_infiltration_is_accounted():
     res = simulate(dom, PRESETS["heavy"], RunParams(hours=6, open_boundary=False))
     assert res.v_inf[-1] > 0
     assert np.abs(res.mass_error).max() < 1e-9
+
+
+def test_ensemble_aggregate():
+    from engine.ensemble import aggregate
+    out = {w["id"]: w for w in aggregate([{1: 30.0, 2: None}, {1: 50.0, 2: None}, {1: None, 2: 90.0}, {1: None, 2: None}])}
+    assert out[1]["p_critical"] == 0.5 and out[1]["eta_median_min"] == 40.0
+    assert out[2]["p_critical"] == 0.25 and out[2]["eta_p10_min"] == 90.0

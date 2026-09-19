@@ -4,8 +4,8 @@ from __future__ import annotations
 import base64
 import json
 import os
+import zlib
 import uuid
-from collections import OrderedDict
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
@@ -21,7 +21,7 @@ from ai.bulletin import write as write_bulletin
 from ai.gemini import AIError, model_name
 from ai.scenario_parser import parse as parse_scenario
 from engine.classify import STATUS_NAMES, Thresholds, classify
-from engine.ensemble import run_ensemble
+from engine.ensemble import run_members
 from engine.rainfall import Rain
 from engine.scenarios import PRESETS
 from engine.simulate import RunParams, simulate
@@ -37,8 +37,6 @@ api = APIRouter(prefix="/api")
 FRAME_MIN = 15.0
 RECORD_MIN = 5.0
 CENTROID = (12.935, 77.675)  # catchment centre for point weather queries
-RUNS: OrderedDict[str, dict] = OrderedDict()  # recent results for the bulletin endpoint
-MAX_RUNS = 20
 
 
 @lru_cache(maxsize=1)
@@ -115,12 +113,7 @@ def get_city():
 @api.post("/simulate")
 def post_simulate(req: SimulateIn):
     out = run_scenario(req)
-    run_id = uuid.uuid4().hex[:12]
-    out["run_id"] = run_id
-    summary = {k: v for k, v in out.items() if k != "frames"}
-    RUNS[run_id] = summary
-    while len(RUNS) > MAX_RUNS:
-        RUNS.popitem(last=False)
+    out["run_id"] = uuid.uuid4().hex[:12]
     return out
 
 
@@ -133,9 +126,22 @@ def live_forecast(hours: int = 48):
         raise HTTPException(502, str(e))
 
 
-class EnsembleIn(BaseModel):
+class EnsembleMembersIn(BaseModel):
     model: Literal["gfs025", "ecmwf_ifs025", "icon_seamless"] = "gfs025"
     hours: int = Field(24, ge=6, le=72)
+
+
+@api.post("/ensemble/members")
+def ensemble_members(req: EnsembleMembersIn):
+    """Fetch the ensemble rainfall; the client then runs members in parallel batches."""
+    try:
+        return weather.ensemble(*CENTROID, model=req.model, hours=req.hours)
+    except weather.WeatherError as err:
+        raise HTTPException(502, str(err))
+
+
+class EnsembleRunIn(BaseModel):
+    members: list[list[float]] = Field(min_length=1, max_length=16)
     peak_factor: float = Field(1.0, ge=1, le=4)
     drainage_failure: float = Field(0.0, ge=0, le=1)
     lake_fill: float = Field(0.5, ge=0, le=1)
@@ -143,23 +149,15 @@ class EnsembleIn(BaseModel):
     blocked_drains: list[int] = Field(default_factory=list, max_length=500)
 
 
-@api.post("/ensemble")
-def post_ensemble(req: EnsembleIn):
-    try:
-        e = weather.ensemble(*CENTROID, model=req.model, hours=req.hours)
-    except weather.WeatherError as err:
-        raise HTTPException(502, str(err))
+@api.post("/ensemble/run")
+def ensemble_run(req: EnsembleRunIn):
+    """Run a batch of members on the 200 m grid; returns each member's ETA per ward."""
+    if any(len(m) > 72 for m in req.members):
+        raise HTTPException(422, "members are limited to 72 hourly values")
     dp = DomainParams(drainage_failure=req.drainage_failure, lake_fill=req.lake_fill,
                       antecedent_wetness=req.antecedent_wetness, blocked_drains=frozenset(req.blocked_drains))
-    out = run_ensemble(e["members"], scale=req.peak_factor, dp=dp)
-    names = {w["id"]: w["name"] for w in city().meta["wards"]}
-    for w in out["wards"]:
-        w["name"] = names.get(w["id"], str(w["id"]))
-    out.update(source=e["source"], times=e["times"], fetched_at=e["fetched_at"],
-               peak_factor=req.peak_factor, grid_m=200,
-               member_hourly_mean=[round(sum(m[i] for m in e["members"]) / len(e["members"]), 2)
-                                   for i in range(len(e["times"]))])
-    return out
+    return {"etas": run_members(req.members, scale=req.peak_factor, dp=dp),
+            "wards": {w["id"]: w["name"] for w in city().meta["wards"]}}
 
 
 # ---------------------------------------------------------------- AI (Gemini, live)
@@ -176,17 +174,21 @@ def ai_scenario(req: ScenarioTextIn):
 
 
 class BulletinIn(BaseModel):
-    run_id: str
+    # The client sends back the run's summary (no frames). Serverless hosts keep no
+    # state between requests, and the facts sent to the model are rebuilt from it.
+    result: dict
     ensemble: dict | None = None
 
 
 @api.post("/ai/bulletin")
 def ai_bulletin(req: BulletinIn):
-    result = RUNS.get(req.run_id)
-    if result is None:
-        raise HTTPException(404, "Unknown or expired run_id: run the simulation again")
+    needed = {"params", "critical_wards", "wards", "pop_critical", "pop_warning", "lakes",
+              "total_rain_mm", "rain_mm_hr"}
+    missing = needed - req.result.keys()
+    if missing:
+        raise HTTPException(422, f"result is missing: {sorted(missing)}")
     try:
-        return write_bulletin(result, req.ensemble)
+        return write_bulletin(req.result, req.ensemble)
     except AIError as e:
         raise HTTPException(502, str(e))
 
@@ -252,7 +254,10 @@ def run_scenario(req: SimulateIn) -> dict:
         "params": req.model_dump(),
         "times_min": res.times_min.tolist(),
         "frame_times_min": res.times_min[::step].tolist(),
-        "frames": [b64(f) for f in frames_mm],
+        # All frames as one zlib stream of little-endian uint16 millimetres (mostly zeros,
+        # so ~10x smaller); the browser inflates it with DecompressionStream('deflate').
+        "frames_z": base64.b64encode(zlib.compress(frames_mm.astype("<u2").tobytes(), 6)).decode(),
+        "frames_shape": list(frames_mm.shape),
         "rain_mm_hr": [round(float(v), 2) for v in res.rain_mm_hr],
         "total_rain_mm": round(rain.total_mm(), 1),
         "wards": wards,
