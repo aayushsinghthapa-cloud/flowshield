@@ -4,7 +4,7 @@ import type { MapLayerMouseEvent, MapMouseEvent } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import type { City, SimResult } from '../api'
 
-export type MapMode = 'depth' | 'status'
+export type MapMode = 'depth' | 'status' | 'probability'
 
 interface Props {
   city: City

@@ -76,6 +76,7 @@ export interface WardResult {
 }
 
 export interface SimResult {
+  run_id: string
   params: ScenarioParams
   times_min: number[]
   frame_times_min: number[]
@@ -95,6 +96,7 @@ export interface SimResult {
     v_in_m3: number[]
     v_out_m3: number[]
     storage_m3: number[]
+    v_inf_m3: number[]
   }
   dt_s: number[]
   steps: number
@@ -179,3 +181,90 @@ export function fmtPop(n: number): string {
   if (n >= 1e3) return `${(n / 1e3).toFixed(1)}k`
   return `${Math.round(n)}`
 }
+
+// ---------------------------------------------------------------- live weather
+export interface Forecast {
+  source: string
+  fetched_at: string
+  times: string[]
+  mm_hr: number[]
+  probability: (number | null)[]
+  past_24h_mm: number
+  next_total_mm: number
+}
+
+export const fetchForecast = () => request<Forecast>('/live/forecast?hours=48')
+
+export interface EnsembleResult {
+  n_members: number
+  source: string
+  fetched_at: string
+  peak_factor: number
+  times: string[]
+  member_totals_mm: number[]
+  member_hourly_mean: number[]
+  wards: { id: number; name: string; p_critical: number; eta_median_min: number | null; eta_p10_min: number | null }[]
+}
+
+export const runEnsemble = (body: {
+  model: string
+  hours: number
+  peak_factor: number
+  drainage_failure: number
+  lake_fill: number
+  antecedent_wetness: number
+  blocked_drains: number[]
+}) => request<EnsembleResult>('/ensemble', { method: 'POST', body: JSON.stringify(body) })
+
+// ---------------------------------------------------------------- AI
+export interface AIMeta {
+  model: string
+  retries: number
+  latency_s: number
+  input_tokens: number | null
+  output_tokens: number | null
+}
+
+export interface ParsedScenario {
+  parsed: {
+    profile: 'constant' | 'triangular' | 'cloudburst' | 'live_forecast'
+    peak_mm_hr: number
+    duration_hr: number
+    peak_at_hr: number
+    drainage_failure: number
+    lake_fill: number
+    antecedent_wetness: number
+    hours: number
+    blocked_places: string[]
+    forecast_peak_factor: number
+    summary: string
+  }
+  blocked_drains: number[]
+  blocked_places: { place: string; drains: number }[]
+  unknown_places: string[]
+  clamped: string[]
+  ai: AIMeta
+  input: string
+}
+
+export const aiParseScenario = (text: string) =>
+  request<ParsedScenario>('/ai/scenario', { method: 'POST', body: JSON.stringify({ text }) })
+
+export interface BulletinResult {
+  bulletin: {
+    severity: string
+    headline: string
+    authority_advisory: string[]
+    public_alert_en: string
+    public_alert_kn: string
+  }
+  grounding: { numbers_checked: number; unverified: string[]; ok: boolean }
+  facts: Record<string, unknown>
+  ai: AIMeta
+}
+
+export const aiBulletin = (run_id: string, ensemble?: EnsembleResult | null) =>
+  request<BulletinResult>('/ai/bulletin', {
+    method: 'POST',
+    body: JSON.stringify({ run_id, ensemble: ensemble ?? null }),
+  })

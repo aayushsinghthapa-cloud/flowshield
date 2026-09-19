@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import base64
 import json
+import uuid
+from collections import OrderedDict
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
@@ -14,11 +16,16 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
+from ai.bulletin import write as write_bulletin
+from ai.gemini import AIError, model_name
+from ai.scenario_parser import parse as parse_scenario
 from engine.classify import STATUS_NAMES, Thresholds, classify
+from engine.ensemble import run_ensemble
 from engine.rainfall import Rain
 from engine.scenarios import PRESETS
 from engine.simulate import RunParams, simulate
 from engine.terrain import DATA, LAKE, LAND, DomainParams, build_domain, load_city
+from live import weather
 
 load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
@@ -28,6 +35,9 @@ api = APIRouter(prefix="/api")
 
 FRAME_MIN = 15.0
 RECORD_MIN = 5.0
+CENTROID = (12.935, 77.675)  # catchment centre for point weather queries
+RUNS: OrderedDict[str, dict] = OrderedDict()  # recent results for the bulletin endpoint
+MAX_RUNS = 20
 
 
 @lru_cache(maxsize=1)
@@ -103,7 +113,87 @@ def get_city():
 
 @api.post("/simulate")
 def post_simulate(req: SimulateIn):
-    return run_scenario(req)
+    out = run_scenario(req)
+    run_id = uuid.uuid4().hex[:12]
+    out["run_id"] = run_id
+    summary = {k: v for k, v in out.items() if k != "frames"}
+    RUNS[run_id] = summary
+    while len(RUNS) > MAX_RUNS:
+        RUNS.popitem(last=False)
+    return out
+
+
+# ---------------------------------------------------------------- live weather
+@api.get("/live/forecast")
+def live_forecast(hours: int = 48):
+    try:
+        return weather.forecast(*CENTROID, hours=min(max(hours, 6), 96))
+    except weather.WeatherError as e:
+        raise HTTPException(502, str(e))
+
+
+class EnsembleIn(BaseModel):
+    model: Literal["gfs025", "ecmwf_ifs025", "icon_seamless"] = "gfs025"
+    hours: int = Field(24, ge=6, le=72)
+    peak_factor: float = Field(1.0, ge=1, le=4)
+    drainage_failure: float = Field(0.0, ge=0, le=1)
+    lake_fill: float = Field(0.5, ge=0, le=1)
+    antecedent_wetness: float = Field(0.0, ge=0, le=1)
+    blocked_drains: list[int] = Field(default_factory=list, max_length=500)
+
+
+@api.post("/ensemble")
+def post_ensemble(req: EnsembleIn):
+    try:
+        e = weather.ensemble(*CENTROID, model=req.model, hours=req.hours)
+    except weather.WeatherError as err:
+        raise HTTPException(502, str(err))
+    dp = DomainParams(drainage_failure=req.drainage_failure, lake_fill=req.lake_fill,
+                      antecedent_wetness=req.antecedent_wetness, blocked_drains=frozenset(req.blocked_drains))
+    out = run_ensemble(e["members"], scale=req.peak_factor, dp=dp)
+    names = {w["id"]: w["name"] for w in city().meta["wards"]}
+    for w in out["wards"]:
+        w["name"] = names.get(w["id"], str(w["id"]))
+    out.update(source=e["source"], times=e["times"], fetched_at=e["fetched_at"],
+               peak_factor=req.peak_factor, grid_m=200,
+               member_hourly_mean=[round(sum(m[i] for m in e["members"]) / len(e["members"]), 2)
+                                   for i in range(len(e["times"]))])
+    return out
+
+
+# ---------------------------------------------------------------- AI (Gemini, live)
+class ScenarioTextIn(BaseModel):
+    text: str = Field(min_length=3, max_length=1000)
+
+
+@api.post("/ai/scenario")
+def ai_scenario(req: ScenarioTextIn):
+    try:
+        return parse_scenario(req.text)
+    except AIError as e:
+        raise HTTPException(502, str(e))
+
+
+class BulletinIn(BaseModel):
+    run_id: str
+    ensemble: dict | None = None
+
+
+@api.post("/ai/bulletin")
+def ai_bulletin(req: BulletinIn):
+    result = RUNS.get(req.run_id)
+    if result is None:
+        raise HTTPException(404, "Unknown or expired run_id: run the simulation again")
+    try:
+        return write_bulletin(result, req.ensemble)
+    except AIError as e:
+        raise HTTPException(502, str(e))
+
+
+@api.get("/ai/status")
+def ai_status():
+    import os
+    return {"configured": bool(os.environ.get("GEMINI_API_KEY")), "model": model_name()}
 
 
 def run_scenario(req: SimulateIn) -> dict:

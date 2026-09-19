@@ -79,6 +79,36 @@ def load_city(data_dir: Path = DATA) -> City:
                 pop=d["pop"].astype(np.float64), frac=frac, cell=float(meta["cell_m"]), meta=meta)
 
 
+def coarsen(city: City, k: int = 2) -> City:
+    """Aggregate k×k blocks (used for fast ensemble runs). Elevation/fractions are
+    averaged, population summed, ids take the block's most common non-empty value."""
+    R, C = (city.z.shape[0] // k) * k, (city.z.shape[1] // k) * k
+
+    def blocks(a):
+        return a[:R, :C].reshape(R // k, k, C // k, k).swapaxes(1, 2).reshape(R // k, C // k, k * k)
+
+    def mode_id(a, min_count=1):
+        b = blocks(a)
+        out = np.full(b.shape[:2], -1, dtype=np.int32)
+        for i in range(k * k):
+            v = b[..., i]
+            cnt = (b == v[..., None]).sum(-1)
+            better = (v >= 0) & (cnt >= min_count) & ((out < 0) | (cnt > (b == out[..., None]).sum(-1)))
+            out = np.where(better, v, out)
+        return out
+
+    return City(
+        z=blocks(city.z).mean(-1),
+        lake_id=mode_id(city.lake_id, min_count=(k * k) // 2),
+        drain_id=mode_id(city.drain_id),
+        ward_id=mode_id(city.ward_id),
+        pop=blocks(city.pop).sum(-1),
+        frac={n: blocks(v).mean(-1) for n, v in city.frac.items()},
+        cell=city.cell * k,
+        meta=city.meta,
+    )
+
+
 def build_domain(city: City, p: DomainParams) -> Domain:
     z = city.z.copy()
     lake = city.lake_id >= 0

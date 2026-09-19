@@ -1,6 +1,14 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { DEFAULT_PARAMS, fetchCity, fmtPop, runSimulation, type City, type ScenarioParams, type SimResult } from './api'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  DEFAULT_PARAMS, fetchCity, fetchForecast, fmtPop, runSimulation,
+  type City, type EnsembleResult, type Forecast, type ParsedScenario, type ScenarioParams, type SimResult,
+} from './api'
+import AIScenarioBox from './components/AIScenarioBox'
+import BulletinPanel from './components/BulletinPanel'
+import CompareView, { describe, type SavedRun } from './components/CompareView'
+import LivePanel from './components/LivePanel'
 import MapView, { type MapMode } from './components/MapView'
+import ModelTab from './components/ModelTab'
 import ResultsPanel from './components/ResultsPanel'
 import ScenarioPanel from './components/ScenarioPanel'
 import TimeSlider from './components/TimeSlider'
@@ -19,24 +27,34 @@ export default function App() {
   const [running, setRunning] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [tab, setTab] = useState<Tab>('simulator')
+  const [saved, setSaved] = useState<SavedRun[]>([])
+  const [ensemble, setEnsemble] = useState<EnsembleResult | null>(null)
+  const [runLabel, setRunLabel] = useState('Heavy storm (default)')
 
-  const run = useCallback(async (p: ScenarioParams) => {
+  const latest = useRef(0)
+  const booted = useRef(false)
+  const run = useCallback(async (p: ScenarioParams, label?: string) => {
+    const id = ++latest.current // only the most recent request may update the UI
+    if (label) setRunLabel(label)
     setRunning(true)
     setError(null)
     setPlaying(false)
     try {
       const r = await runSimulation(p)
+      if (id !== latest.current) return
       setResult(r)
       setFrame(0)
       setPlaying(true)
     } catch (e) {
-      setError(`Simulation failed: ${(e as Error).message}`)
+      if (id === latest.current) setError(`Simulation failed: ${(e as Error).message}`)
     } finally {
-      setRunning(false)
+      if (id === latest.current) setRunning(false)
     }
   }, [])
 
   useEffect(() => {
+    if (booted.current) return
+    booted.current = true
     fetchCity()
       .then((c) => {
         setCity(c)
@@ -56,6 +74,59 @@ export default function App() {
     result?.wards.forEach((w) => m.set(w.id, w.status[recordIdx]))
     return m
   }, [result, recordIdx])
+
+  const runLive = useCallback((f: Forecast, factor: number, hours: number) => {
+    const series = f.mm_hr.slice(0, hours)
+    const p: ScenarioParams = {
+      ...params,
+      rain: { ...params.rain, profile: 'series', series_mm_hr: series, series_step_hr: 1, scale: factor, start_hr: 0 },
+      hours,
+      antecedent_wetness: Math.min(1, f.past_24h_mm / 40),
+    }
+    setParams(p)
+    run(p, `Live forecast from ${f.times[0]?.slice(5, 16).replace('T', ' ')}${factor > 1 ? ` ×${factor}` : ''}`)
+  }, [params, run])
+
+  const confirmAI = useCallback(async (ps: ParsedScenario) => {
+    const a = ps.parsed
+    const base: ScenarioParams = {
+      ...params,
+      drainage_failure: a.drainage_failure,
+      lake_fill: a.lake_fill,
+      antecedent_wetness: a.antecedent_wetness,
+      blocked_drains: ps.blocked_drains,
+      hours: a.hours,
+    }
+    if (a.profile === 'live_forecast') {
+      try {
+        const f = await fetchForecast()
+        const series = f.mm_hr.slice(0, 24)
+        const p = { ...base, hours: 24, rain: { ...params.rain, profile: 'series' as const, series_mm_hr: series, series_step_hr: 1, scale: a.forecast_peak_factor, start_hr: 0 } }
+        setParams(p)
+        run(p, `AI: ${a.summary}`)
+      } catch (e) {
+        setError(`Forecast unavailable: ${(e as Error).message}`)
+      }
+      return
+    }
+    const p: ScenarioParams = {
+      ...base,
+      rain: { ...params.rain, profile: a.profile, peak_mm_hr: a.peak_mm_hr, duration_hr: a.duration_hr,
+        peak_at_hr: a.peak_at_hr, series_mm_hr: [], scale: 1, start_hr: 0 },
+    }
+    setParams(p)
+    run(p, `AI: ${a.summary}`)
+  }, [params, run])
+
+  const saveRun = () => {
+    if (!result) return
+    setSaved((s) => [...s.slice(-3), { name: `${String.fromCharCode(65 + (s.length % 26))} · ${runLabel.slice(0, 40)}`, result }])
+  }
+
+  const probability = useMemo(() => {
+    if (!ensemble || mode !== 'probability') return null
+    return new Map(ensemble.wards.map((w) => [w.id, w.p_critical]))
+  }, [ensemble, mode])
 
   const toggleDrain = useCallback((id: number) => {
     setParams((p) => ({
@@ -89,7 +160,7 @@ export default function App() {
           {(['simulator', 'compare', 'model'] as Tab[]).map((t) => (
             <button key={t} onClick={() => setTab(t)}
               className={`px-3 py-1 rounded text-sm capitalize ${tab === t ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-200'}`}>
-              {t}
+              {t}{t === 'compare' && saved.length > 0 ? ` (${saved.length})` : ''}
             </button>
           ))}
         </nav>
@@ -99,19 +170,26 @@ export default function App() {
       {tab === 'simulator' && (
         <div className="flex-1 min-h-0 flex flex-col lg:flex-row">
           <aside className="lg:w-72 shrink-0 overflow-y-auto border-r border-slate-800 p-4 bg-slate-900/60">
-            <ScenarioPanel city={city} params={params} onChange={setParams} onRun={() => run(params)}
-              running={running} blockMode={blockMode} onBlockMode={setBlockMode} />
+            <div className="space-y-4">
+              <AIScenarioBox onConfirm={confirmAI} busy={running} />
+              <LivePanel params={params} onRunLive={runLive} ensemble={ensemble}
+                onEnsemble={(e) => { setEnsemble(e); if (e) setMode('probability'); else if (mode === 'probability') setMode('status') }}
+                running={running} />
+              <ScenarioPanel city={city} params={params} onChange={setParams}
+                onRun={() => run(params, describe({ params } as SimResult))}
+                running={running} blockMode={blockMode} onBlockMode={setBlockMode} />
+            </div>
           </aside>
 
           <main className="relative flex-1 min-h-[420px]">
             <MapView city={city} result={result} frame={frame} mode={mode} blocked={params.blocked_drains}
               blockMode={blockMode} onToggleDrain={toggleDrain} selectedWard={selectedWard}
-              onSelectWard={setSelectedWard} wardStatus={wardStatus} />
+              onSelectWard={setSelectedWard} wardStatus={wardStatus} probability={probability} />
             <div className="absolute top-3 left-3 flex gap-1 rounded-md bg-slate-900/90 p-1 border border-slate-700 text-xs">
-              {(['status', 'depth'] as MapMode[]).map((m) => (
+              {(['status', 'depth', ...(ensemble ? ['probability'] : [])] as MapMode[]).map((m) => (
                 <button key={m} onClick={() => setMode(m)}
                   className={`px-2 py-1 rounded capitalize ${mode === m ? 'bg-slate-700' : 'text-slate-400'}`}>
-                  {m === 'status' ? 'Risk status' : 'Water depth'}
+                  {m === 'status' ? 'Risk status' : m === 'depth' ? 'Water depth' : 'Ensemble P(critical)'}
                 </button>
               ))}
             </div>
@@ -133,8 +211,20 @@ export default function App() {
 
           <aside className="lg:w-96 shrink-0 overflow-y-auto border-l border-slate-800 p-4 bg-slate-900/60">
             {result ? (
-              <ResultsPanel result={result} recordIdx={recordIdx} selectedWard={selectedWard}
-                onSelectWard={setSelectedWard} />
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[11px] uppercase tracking-wide text-slate-500">Current run</div>
+                    <div className="text-sm text-slate-200 truncate" title={runLabel}>{runLabel}</div>
+                  </div>
+                  <button className="btn-ghost shrink-0" onClick={saveRun} disabled={saved.some((r) => r.result.run_id === result.run_id)}>
+                    {saved.some((r) => r.result.run_id === result.run_id) ? 'Saved ✓' : 'Save to compare'}
+                  </button>
+                </div>
+                <ResultsPanel result={result} recordIdx={recordIdx} selectedWard={selectedWard}
+                  onSelectWard={setSelectedWard} />
+                <BulletinPanel result={result} ensemble={ensemble} />
+              </div>
             ) : (
               <p className="text-sm text-slate-400">Run a simulation to see ward risk, ETAs and affected population.</p>
             )}
@@ -142,8 +232,15 @@ export default function App() {
         </div>
       )}
 
-      {tab !== 'simulator' && (
-        <div className="flex-1 grid place-items-center text-slate-400 text-sm">Coming next.</div>
+      {tab === 'compare' && (
+        <div className="flex-1 min-h-0">
+          <CompareView runs={saved} onRemove={(i) => setSaved((s) => s.filter((_, j) => j !== i))} />
+        </div>
+      )}
+      {tab === 'model' && (
+        <div className="flex-1 min-h-0">
+          <ModelTab result={result} />
+        </div>
       )}
 
       <footer className="px-4 py-1 text-[10px] text-slate-500 border-t border-slate-800">

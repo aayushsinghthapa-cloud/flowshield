@@ -164,3 +164,10 @@ Roles (3–4): **Model lead** (pipeline + engine + tests + model.md, owns the ma
 - UI: MapLibre dark map, risk-status/depth overlay, ward fill by live status, play/pause + time slider, summary cards, ward table (status now, ETA, rising ▲, critical pop), rain + affected-pop chart, ward detail chart, lake-cascade chart, mass-error readout.
 - **Fixes:** MapLibre pinned to v5 (the v6 issue was a stale Vite dep cache: run `vite --force` after dependency changes). CARTO basemap now needs an API key, so we use Esri World Dark Gray (no key). Inline map style, so flood layers never wait on a remote style.
 - **Model:** added infiltration of ponded water on pervious ground (5 mm/hr × pervious fraction), tracked as V_inf in the mass balance. 11/11 tests pass.
+
+**19 Sep 22:00–23:15 · Phase 3 + most of Phase 4 (done)**
+- Live: Open-Meteo forecast panel (next 24 h, past 24 h sets antecedent wetness), "Simulate next 24 h" with a thunderstorm peak factor. **Ensemble risk:** 31 GFS members on a 200 m aggregated grid (lake at rest verified), ~12 s → P(ward critical) map mode.
+- AI (Gemini, live): A1 NL scenario builder (schema output, clamping, place→real OSM drain resolution, confirm step). A2 bulletin (severity, authority advisory, EN + ಕನ್ನಡ SMS alert) with a **grounding check** (all numbers verified against the run). Retry + fallback chain (3.6-flash → 3.5-flash → flash-latest) for 503 overloads; the UI badge shows the model that actually answered. `gemini-2.5-flash` is retired for new keys.
+- Compare tab (≤4 runs: summary table, critical-area and people-at-critical overlays, per-ward ETA table). Model tab (KaTeX equations 1–8, volume budget chart, error + Δt chart, parameters, verified properties, limitations).
+- **Demo story found:** blocking the 14 OSM drains near **Ejipura** flips it Safe → **Critical at 2 h 12 m** under the heavy preset (385 → 1,107 people in critical cells). Blocks near Bellanduru/HSR change little (not the bottleneck).
+- Fixed: run race (StrictMode double initial run overwrote later runs), playback now stops on the last frame, lake chart >100% labelled as spilling.

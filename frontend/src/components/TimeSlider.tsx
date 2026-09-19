@@ -14,8 +14,8 @@ export default function TimeSlider({ times, frame, onFrame, playing, onPlaying, 
   useEffect(() => {
     if (!playing) return
     const id = setInterval(() => {
-      onFrame(frame + 1 >= times.length ? 0 : frame + 1)
       if (frame + 1 >= times.length) onPlaying(false)
+      else onFrame(frame + 1)
     }, 180)
     return () => clearInterval(id)
   }, [playing, frame, times.length, onFrame, onPlaying])
@@ -25,7 +25,10 @@ export default function TimeSlider({ times, frame, onFrame, playing, onPlaying, 
     <div className="flex items-center gap-3 rounded-lg bg-slate-900/90 backdrop-blur px-3 py-2 border border-slate-700 shadow-lg">
       <button
         className="w-9 h-9 rounded-full bg-sky-500 text-slate-950 font-bold hover:bg-sky-400"
-        onClick={() => onPlaying(!playing)}
+        onClick={() => {
+          if (!playing && frame >= times.length - 1) onFrame(0)
+          onPlaying(!playing)
+        }}
         aria-label={playing ? 'Pause' : 'Play'}
       >
         {playing ? '❚❚' : '▶'}

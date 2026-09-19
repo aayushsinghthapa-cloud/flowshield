@@ -152,7 +152,7 @@ export default function ResultsPanel({ result, recordIdx, selectedWard, onSelect
       </div>
 
       <div className="rounded-lg bg-slate-800/40 border border-slate-700 p-2">
-        <div className="text-xs text-slate-300 mb-1">Lake cascade: tank level (% of storage)</div>
+        <div className="text-xs text-slate-300 mb-1">Lake cascade: tank level (% of full · above 100% = spilling over the weir)</div>
         <ResponsiveContainer width="100%" height={130}>
           <LineChart data={r.times_min.map((t, i) => {
             const row: Record<string, number> = { t: +(t / 60).toFixed(2) }
@@ -161,7 +161,8 @@ export default function ResultsPanel({ result, recordIdx, selectedWard, onSelect
           })} margin={{ left: -18, right: 4, top: 4, bottom: 0 }}>
             <CartesianGrid stroke="#334155" strokeDasharray="3 3" />
             <XAxis dataKey="t" tick={{ fontSize: 10, fill: '#94a3b8' }} unit="h" />
-            <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} domain={[0, 100]} />
+            <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} domain={[0, 'auto']} />
+            <ReferenceLine y={100} stroke="#f43f5e" strokeDasharray="4 2" />
             <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #334155', fontSize: 12 }} />
             <Legend wrapperStyle={{ fontSize: 10 }} />
             {r.lakes.slice(0, 5).map((l, i) => (
