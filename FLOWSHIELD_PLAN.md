@@ -158,3 +158,9 @@ Roles (3–4): **Model lead** (pipeline + engine + tests + model.md, owns the ma
 - Solver: local-inertial. 12 h run ≈ 6–7 s, mean Δt ≈ 10 s, mass error ≤ 2e-13 on the real grid.
 - Ward metric switched p90 → **p95**. Heavy: 5 critical wards (Bharathi Nagar, Jayanagar East, Gurappanapalya, Shantala Nagar, Adugodi). Cloudburst: 8.
 - 10/10 engine tests pass (closed-bowl mass balance, positivity, lake-at-rest, flat uniform rain, symmetry, conservative drainage, real-city rest, real-city mass balance, drainage failure worse, blocked drains back up).
+
+**19 Sep 21:00–21:40 · Phase 2 core MVP (done, tagged v0.1-mvp)**
+- API: `/api/city` (grid, wards/lakes/drains GeoJSON), `/api/simulate` (15-min base64 uint16 frames, 5-min ward series, ETAs, affected pop, lake levels, mass balance, Δt). Cloudburst 12 h ≈ 8 s end-to-end.
+- UI: MapLibre dark map, risk-status/depth overlay, ward fill by live status, play/pause + time slider, summary cards, ward table (status now, ETA, rising ▲, critical pop), rain + affected-pop chart, ward detail chart, lake-cascade chart, mass-error readout.
+- **Fixes:** MapLibre pinned to v5 (the v6 issue was a stale Vite dep cache: run `vite --force` after dependency changes). CARTO basemap now needs an API key, so we use Esri World Dark Gray (no key). Inline map style, so flood layers never wait on a remote style.
+- **Model:** added infiltration of ponded water on pervious ground (5 mm/hr × pervious fraction), tracked as V_inf in the mass balance. 11/11 tests pass.

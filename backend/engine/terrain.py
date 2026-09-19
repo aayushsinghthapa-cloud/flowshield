@@ -53,6 +53,7 @@ class DomainParams:
     blocked_drains: frozenset[int] = field(default_factory=frozenset)
     blockage_height_m: float = 1.0     # debris/encroachment raising a blocked drain bed
     max_route_m: float = 1500.0        # land cells farther than this from a drain are not piped
+    infiltration_mm_hr: float = 5.0    # ponded-water infiltration on pervious ground (after runoff C)
 
 
 @dataclass
@@ -64,6 +65,7 @@ class Domain:
     n: np.ndarray
     D: np.ndarray             # drainage capacity (m/s)
     route: np.ndarray         # flat index each land cell drains into (-1 = none)
+    infil: np.ndarray         # infiltration capacity of ponded water (m/s)
     kind: np.ndarray          # LAND / LAKE / CHANNEL
     cell: float
 
@@ -130,4 +132,8 @@ def build_domain(city: City, p: DomainParams) -> Domain:
     D[no_pipe] = 0.0
     route = np.where(no_pipe, -1, route).ravel()
 
-    return Domain(z=z, h0=h0, C=C, n=n, D=D, route=route, kind=kind, cell=city.cell)
+    pervious = 1.0 - city.frac["built"] - city.frac["water"]
+    infil = np.where(kind == LAND, np.clip(pervious, 0, 1), 0.0) * p.infiltration_mm_hr / 1000.0 / 3600.0
+    infil *= (1.0 - p.antecedent_wetness)
+
+    return Domain(z=z, h0=h0, C=C, n=n, D=D, route=route, kind=kind, cell=city.cell, infil=infil)

@@ -13,7 +13,8 @@ def synthetic(z: np.ndarray, h0=None, C=1.0, n=0.03, D=0.0, cell=100.0) -> Domai
     shape = z.shape
     return Domain(z=z.astype(float), h0=np.zeros(shape) if h0 is None else h0.astype(float),
                   C=np.full(shape, C), n=np.full(shape, n), D=np.full(shape, D),
-                  route=np.full(z.size, -1), kind=np.full(shape, LAND, dtype=np.int8), cell=cell)
+                  route=np.full(z.size, -1), kind=np.full(shape, LAND, dtype=np.int8), cell=cell,
+                  infil=np.zeros(shape))
 
 
 def bowl(N=31):
@@ -108,3 +109,12 @@ def test_blocked_drain_backs_up(city):
     land = dom.kind == LAND
     assert res_b.depth[-1][land].sum() > base.depth[-1][land].sum()
     assert (dom_b.kind == LAKE).sum() == (dom.kind == LAKE).sum()
+
+
+def test_infiltration_is_accounted():
+    z = bowl(15)
+    dom = synthetic(z)
+    dom.infil = np.full(z.shape, 10 / 1000 / 3600)
+    res = simulate(dom, PRESETS["heavy"], RunParams(hours=6, open_boundary=False))
+    assert res.v_inf[-1] > 0
+    assert np.abs(res.mass_error).max() < 1e-9

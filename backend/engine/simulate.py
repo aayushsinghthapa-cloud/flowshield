@@ -3,6 +3,7 @@
 Per step, with water surface eta = z + h:
   1. effective rain     h += C * R(t) * dt            (+ upstream inflow)
   2. drainage transfer  d = min(h, D dt), moved from land cells into their drain/lake
+     infiltration       i = min(h, f dt) on pervious land (a loss, counted as V_inf)
   3. face fluxes        q <- (q - g h_f dt d(eta)/dx) / (1 + g dt n^2 |q| / h_f^(7/3))
   4. positivity limiter scale each donor cell's outflow to at most its stored volume
   5. continuity         h += dt (sum q_in - sum q_out) / dx
@@ -46,7 +47,8 @@ class RunResult:
     volume: np.ndarray             # stored volume at record times (m^3)
     v_in: np.ndarray               # cumulative rain + inflow volume (m^3)
     v_out: np.ndarray              # cumulative boundary outflow (m^3)
-    mass_error: np.ndarray         # (V - V0 - Vin + Vout) / max(Vin, tiny)
+    v_inf: np.ndarray              # cumulative infiltration of ponded water (m^3)
+    mass_error: np.ndarray         # (V - V0 - Vin + Vout + Vinf) / max(Vin, tiny)
     dt_series: np.ndarray          # mean dt between records (s)
     steps: int
     runtime_s: float
@@ -75,7 +77,9 @@ def simulate(dom: Domain, rain: Rain, rp: RunParams | None = None) -> RunResult:
     inflow_idx = None if rp.inflow_cell is None else np.ravel_multi_index(rp.inflow_cell, h.shape)
 
     v0 = h.sum() * area
-    v_in = v_out = 0.0
+    v_in = v_out = v_inf = 0.0
+    infil = dom.infil
+    has_infil = bool(np.any(infil > 0))
     t = 0.0
     t_end = rp.hours * 3600.0
     rec_dt = rp.record_min * 60.0
@@ -85,6 +89,7 @@ def simulate(dom: Domain, rain: Rain, rp: RunParams | None = None) -> RunResult:
     vol = np.zeros(n_rec)
     vin_rec = np.zeros(n_rec)
     vout_rec = np.zeros(n_rec)
+    vinf_rec = np.zeros(n_rec)
     dt_rec = np.zeros(n_rec)
     depth[0] = h
     vol[0] = v0
@@ -118,6 +123,10 @@ def simulate(dom: Domain, rain: Rain, rp: RunParams | None = None) -> RunResult:
             d = np.minimum(hf[route_src], D_flat * dt)
             hf[route_src] -= d
             hf += np.bincount(route_dst, weights=d, minlength=hf.size)
+        if has_infil:
+            loss = np.minimum(h, infil * dt)
+            h -= loss
+            v_inf += loss.sum() * area
 
         # 3. local-inertial face fluxes (m^2/s)
         eta = z + h
@@ -187,15 +196,16 @@ def simulate(dom: Domain, rain: Rain, rp: RunParams | None = None) -> RunResult:
             vol[k] = v
             vin_rec[k] = v_in
             vout_rec[k] = v_out
+            vinf_rec[k] = v_inf
             rain_rec[k] = rain.intensity(t / 3600.0)
             dt_rec[k] = t_since / steps_since
             steps_since = 0
             t_since = 0.0
             k += 1
 
-    err = (vol - v0 - vin_rec + vout_rec) / np.maximum(vin_rec, 1.0)
+    err = (vol - v0 - vin_rec + vout_rec + vinf_rec) / np.maximum(vin_rec, 1.0)
     return RunResult(times_min=np.arange(n_rec) * rp.record_min, depth=depth, rain_mm_hr=rain_rec,
-                     volume=vol, v_in=vin_rec, v_out=vout_rec, mass_error=err,
+                     volume=vol, v_in=vin_rec, v_out=vout_rec, v_inf=vinf_rec, mass_error=err,
                      dt_series=dt_rec, steps=steps, runtime_s=time.perf_counter() - t0)
 
 
