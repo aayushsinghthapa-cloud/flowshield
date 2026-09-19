@@ -5,7 +5,7 @@
 
 Hack-a-Matics 2026 · Theme **VECTOR** · Problem **FLOWSHIELD**
 
-**Live demo:** _TBD_ · **Demo video:** _TBD_
+**Live demo:** https://flowshield-iota.vercel.app · **Demo video:** _TBD_
 
 ---
 

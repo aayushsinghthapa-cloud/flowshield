@@ -247,7 +247,7 @@ export async function runEnsemble(body: {
   const ens = await request<{ source: string; times: string[]; members: number[][]; fetched_at: string }>(
     '/ensemble/members', { method: 'POST', body: JSON.stringify({ model: body.model, hours: body.hours }) })
   const { model: _m, hours: _h, ...domain } = body
-  const BATCHES = 4
+  const BATCHES = 8
   const size = Math.ceil(ens.members.length / BATCHES)
   const chunks = Array.from({ length: BATCHES }, (_, i) => ens.members.slice(i * size, (i + 1) * size)).filter((c) => c.length)
   const parts = await Promise.all(chunks.map((members) =>
