@@ -74,7 +74,7 @@ State per cell: z (bed, after burning), h (depth), C (runoff coeff), n (Manning)
 **Mass balance:** ε = |V_now − V₀ − V_rain,eff − V_inflow + V_out| / V_rain,eff. The target is ~1e-12, shown live in the UI.
 
 **Classification** (thresholds editable; defaults tied to US NWS "Turn Around Don't Drown": ~15 cm moving water knocks a person down, ~30 cm floats a car):
-cell Safe < 0.15 m ≤ Warning < 0.30 m ≤ Critical. **Ward metric = p90 depth over land cells only.**
+cell Safe < 0.15 m ≤ Warning < 0.30 m ≤ Critical. **Ward metric = p95 depth over land cells only** (critical when ≥5% of the ward's land area is ≥30 cm; p90 proved too insensitive on real data: cloudburst flagged only 2 of 72 wards).
 **ETA to critical** = first simulated time the ward metric ≥ 0.30 m. **Rising-fast flag** from dh/dt of the metric.
 **Affected population** = Σ pop over Warning / Critical land cells over time. Report the peak.
 **Ensemble probability:** P(ward critical) = (members with ETA ≠ null) / N. Run on a 200 m coarsened grid with multiprocessing.
@@ -146,3 +146,15 @@ Roles (3–4): **Model lead** (pipeline + engine + tests + model.md, owns the ma
 
 ## 9. Files I'll create first after approval
 `FLOWSHIELD_PLAN.md` (this plan, repo source of truth), `DATA_SOURCES.md` (URLs, licences, checks done), the Phase 0 scaffold, then `backend/pipeline/build_city.py`. I'll keep all of them updated as data arrives, and save a project memory note.
+
+---
+
+## 10. Build log & decisions (updated as we go)
+
+**19 Sep 20:30–21:00 · Phase 0 + Phase 1 engine (done)**
+- Pipeline built from live sources in ~30 s: grid 147×231 @ 100 m, elevation 854–953 m, 116 lakes ≥1 ha (Bellandur 315 ha, Varthur 154, Madiwala 85, Agara 28 …), 1,031 OSM drain ways, 72 BBMP wards, 2.09 M people (Census 2011, in domain).
+- **DEM conditioning added:** DSM pits held 4.5×10⁷ m³, which is 2.6× a whole heavy storm (building/tree artefacts). Priority-flood (Barnes 2014) fill, keeping pits ≤0.5 m.
+- **Lake full level = lowest point of lake or rim** (the DSM over weed-covered tanks sits up to 3.7 m above the bank). **Weir rule:** drain cells touching a tank are raised to its full level. **Edge lakes closed** to the open boundary. Result: the real city with no rain is exactly at rest (0 outflow, 0 land water).
+- Solver: local-inertial. 12 h run ≈ 6–7 s, mean Δt ≈ 10 s, mass error ≤ 2e-13 on the real grid.
+- Ward metric switched p90 → **p95**. Heavy: 5 critical wards (Bharathi Nagar, Jayanagar East, Gurappanapalya, Shantala Nagar, Adugodi). Cloudburst: 8.
+- 10/10 engine tests pass (closed-bowl mass balance, positivity, lake-at-rest, flat uniform rain, symmetry, conservative drainage, real-city rest, real-city mass balance, drainage failure worse, blocked drains back up).

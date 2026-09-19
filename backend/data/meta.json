@@ -1,0 +1,1650 @@
+{
+ "bbox": {
+  "west": 77.57,
+  "south": 12.87,
+  "east": 77.78,
+  "north": 13.0
+ },
+ "crs": "EPSG:32643",
+ "cell_m": 100.0,
+ "shape": [
+  147,
+  231
+ ],
+ "origin_utm": [
+  778700.0,
+  1438800.0
+ ],
+ "corners_lonlat": [
+  [
+   77.56929707658459,
+   13.002329910416849
+  ],
+  [
+   77.78208271585409,
+   13.00013610628571
+  ],
+  [
+   77.7806108103926,
+   12.86736503808227
+  ],
+  [
+   77.56793743448176,
+   12.869535690475834
+  ]
+ ],
+ "wards": [
+  {
+   "id": 0,
+   "no": 50,
+   "name": "Benniganahalli",
+   "pop2011_in_domain": 19503,
+   "cells": 299,
+   "centroid": [
+    77.65126,
+    12.99599
+   ]
+  },
+  {
+   "id": 1,
+   "no": 56,
+   "name": "A Narayanapura",
+   "pop2011_in_domain": 29420,
+   "cells": 215,
+   "centroid": [
+    77.67258,
+    12.99447
+   ]
+  },
+  {
+   "id": 2,
+   "no": 57,
+   "name": "C V Raman Nagar",
+   "pop2011_in_domain": 29760,
+   "cells": 357,
+   "centroid": [
+    77.6652,
+    12.98395
+   ]
+  },
+  {
+   "id": 3,
+   "no": 58,
+   "name": "New Tippasandara",
+   "pop2011_in_domain": 34577,
+   "cells": 339,
+   "centroid": [
+    77.65679,
+    12.9765
+   ]
+  },
+  {
+   "id": 4,
+   "no": 59,
+   "name": "Maruthi Seva Nagar",
+   "pop2011_in_domain": 24805,
+   "cells": 165,
+   "centroid": [
+    77.63165,
+    12.99807
+   ]
+  },
+  {
+   "id": 5,
+   "no": 63,
+   "name": "Jayamahal",
+   "pop2011_in_domain": 22621,
+   "cells": 141,
+   "centroid": [
+    77.60022,
+    12.99459
+   ]
+  },
+  {
+   "id": 6,
+   "no": 64,
+   "name": "Rajamahal Guttahalli",
+   "pop2011_in_domain": 22707,
+   "cells": 46,
+   "centroid": [
+    77.57878,
+    13.00033
+   ]
+  },
+  {
+   "id": 7,
+   "no": 77,
+   "name": "Dattatreya Temple",
+   "pop2011_in_domain": 33133,
+   "cells": 75,
+   "centroid": [
+    77.57426,
+    12.99646
+   ]
+  },
+  {
+   "id": 8,
+   "no": 78,
+   "name": "Pulikeshinagar",
+   "pop2011_in_domain": 27980,
+   "cells": 173,
+   "centroid": [
+    77.61184,
+    12.9953
+   ]
+  },
+  {
+   "id": 9,
+   "no": 79,
+   "name": "Sarvagna Nagar",
+   "pop2011_in_domain": 34943,
+   "cells": 363,
+   "centroid": [
+    77.63104,
+    12.98917
+   ]
+  },
+  {
+   "id": 10,
+   "no": 80,
+   "name": "Hoysala Nagar",
+   "pop2011_in_domain": 35890,
+   "cells": 210,
+   "centroid": [
+    77.63878,
+    12.97846
+   ]
+  },
+  {
+   "id": 11,
+   "no": 81,
+   "name": "Vijnana Nagar",
+   "pop2011_in_domain": 24757,
+   "cells": 570,
+   "centroid": [
+    77.68177,
+    12.97849
+   ]
+  },
+  {
+   "id": 12,
+   "no": 82,
+   "name": "Garudachar Playa",
+   "pop2011_in_domain": 20920,
+   "cells": 667,
+   "centroid": [
+    77.71728,
+    12.9859
+   ]
+  },
+  {
+   "id": 13,
+   "no": 83,
+   "name": "Kadugodi",
+   "pop2011_in_domain": 19589,
+   "cells": 1008,
+   "centroid": [
+    77.75654,
+    12.98874
+   ]
+  },
+  {
+   "id": 14,
+   "no": 84,
+   "name": "Hagadur",
+   "pop2011_in_domain": 25693,
+   "cells": 1270,
+   "centroid": [
+    77.74807,
+    12.96605
+   ]
+  },
+  {
+   "id": 15,
+   "no": 85,
+   "name": "Dodda Nekkundi",
+   "pop2011_in_domain": 22016,
+   "cells": 1213,
+   "centroid": [
+    77.70782,
+    12.96818
+   ]
+  },
+  {
+   "id": 16,
+   "no": 86,
+   "name": "Marathahalli",
+   "pop2011_in_domain": 22489,
+   "cells": 317,
+   "centroid": [
+    77.6915,
+    12.95074
+   ]
+  },
+  {
+   "id": 17,
+   "no": 87,
+   "name": "HAL Airport",
+   "pop2011_in_domain": 33066,
+   "cells": 681,
+   "centroid": [
+    77.6715,
+    12.95654
+   ]
+  },
+  {
+   "id": 18,
+   "no": 88,
+   "name": "Jeevanbhima Nagar",
+   "pop2011_in_domain": 36152,
+   "cells": 185,
+   "centroid": [
+    77.65003,
+    12.96465
+   ]
+  },
+  {
+   "id": 19,
+   "no": 89,
+   "name": "Jogupalya",
+   "pop2011_in_domain": 34611,
+   "cells": 90,
+   "centroid": [
+    77.63259,
+    12.97372
+   ]
+  },
+  {
+   "id": 20,
+   "no": 90,
+   "name": "Halsoor",
+   "pop2011_in_domain": 35891,
+   "cells": 166,
+   "centroid": [
+    77.61982,
+    12.9797
+   ]
+  },
+  {
+   "id": 21,
+   "no": 91,
+   "name": "Bharathi Nagar",
+   "pop2011_in_domain": 32632,
+   "cells": 78,
+   "centroid": [
+    77.61104,
+    12.98701
+   ]
+  },
+  {
+   "id": 22,
+   "no": 92,
+   "name": "Shivaji Nagar",
+   "pop2011_in_domain": 35740,
+   "cells": 43,
+   "centroid": [
+    77.60587,
+    12.9887
+   ]
+  },
+  {
+   "id": 23,
+   "no": 93,
+   "name": "Vasanth Nagar",
+   "pop2011_in_domain": 25632,
+   "cells": 308,
+   "centroid": [
+    77.5858,
+    12.98913
+   ]
+  },
+  {
+   "id": 24,
+   "no": 94,
+   "name": "Gandhinagar",
+   "pop2011_in_domain": 35310,
+   "cells": 190,
+   "centroid": [
+    77.57567,
+    12.98156
+   ]
+  },
+  {
+   "id": 25,
+   "no": 109,
+   "name": "Chickpete",
+   "pop2011_in_domain": 33698,
+   "cells": 79,
+   "centroid": [
+    77.5771,
+    12.97069
+   ]
+  },
+  {
+   "id": 26,
+   "no": 110,
+   "name": "Sampangiram Nagar",
+   "pop2011_in_domain": 33120,
+   "cells": 444,
+   "centroid": [
+    77.59537,
+    12.97679
+   ]
+  },
+  {
+   "id": 27,
+   "no": 111,
+   "name": "Shantala Nagar",
+   "pop2011_in_domain": 30225,
+   "cells": 399,
+   "centroid": [
+    77.60646,
+    12.96987
+   ]
+  },
+  {
+   "id": 28,
+   "no": 112,
+   "name": "Domlur",
+   "pop2011_in_domain": 34703,
+   "cells": 176,
+   "centroid": [
+    77.63804,
+    12.96336
+   ]
+  },
+  {
+   "id": 29,
+   "no": 113,
+   "name": "Konena Agrahara",
+   "pop2011_in_domain": 29344,
+   "cells": 215,
+   "centroid": [
+    77.6522,
+    12.95578
+   ]
+  },
+  {
+   "id": 30,
+   "no": 114,
+   "name": "Agaram",
+   "pop2011_in_domain": 35632,
+   "cells": 1128,
+   "centroid": [
+    77.63905,
+    12.94426
+   ]
+  },
+  {
+   "id": 31,
+   "no": 115,
+   "name": "Vannarpet",
+   "pop2011_in_domain": 35532,
+   "cells": 75,
+   "centroid": [
+    77.61894,
+    12.95421
+   ]
+  },
+  {
+   "id": 32,
+   "no": 116,
+   "name": "Nilasandra",
+   "pop2011_in_domain": 36279,
+   "cells": 50,
+   "centroid": [
+    77.61464,
+    12.95116
+   ]
+  },
+  {
+   "id": 33,
+   "no": 117,
+   "name": "Shanthi Nagar",
+   "pop2011_in_domain": 36426,
+   "cells": 269,
+   "centroid": [
+    77.60371,
+    12.95732
+   ]
+  },
+  {
+   "id": 34,
+   "no": 118,
+   "name": "Sudham Nagara",
+   "pop2011_in_domain": 32202,
+   "cells": 101,
+   "centroid": [
+    77.58619,
+    12.95933
+   ]
+  },
+  {
+   "id": 35,
+   "no": 119,
+   "name": "Dharmaraya Swamy Temple",
+   "pop2011_in_domain": 33199,
+   "cells": 113,
+   "centroid": [
+    77.58051,
+    12.96313
+   ]
+  },
+  {
+   "id": 36,
+   "no": 139,
+   "name": "K R Market",
+   "pop2011_in_domain": 23072,
+   "cells": 65,
+   "centroid": [
+    77.57279,
+    12.96419
+   ]
+  },
+  {
+   "id": 37,
+   "no": 143,
+   "name": "Vishveshwara Puram",
+   "pop2011_in_domain": 34375,
+   "cells": 238,
+   "centroid": [
+    77.58053,
+    12.95022
+   ]
+  },
+  {
+   "id": 38,
+   "no": 144,
+   "name": "Siddapura",
+   "pop2011_in_domain": 32194,
+   "cells": 68,
+   "centroid": [
+    77.59302,
+    12.94384
+   ]
+  },
+  {
+   "id": 39,
+   "no": 145,
+   "name": "Hombegowda Nagara",
+   "pop2011_in_domain": 36455,
+   "cells": 143,
+   "centroid": [
+    77.59487,
+    12.9506
+   ]
+  },
+  {
+   "id": 40,
+   "no": 146,
+   "name": "Lakkasandra",
+   "pop2011_in_domain": 28303,
+   "cells": 128,
+   "centroid": [
+    77.6048,
+    12.94111
+   ]
+  },
+  {
+   "id": 41,
+   "no": 147,
+   "name": "Adugodi",
+   "pop2011_in_domain": 29945,
+   "cells": 164,
+   "centroid": [
+    77.61308,
+    12.94324
+   ]
+  },
+  {
+   "id": 42,
+   "no": 148,
+   "name": "Ejipura",
+   "pop2011_in_domain": 29105,
+   "cells": 164,
+   "centroid": [
+    77.62703,
+    12.94232
+   ]
+  },
+  {
+   "id": 43,
+   "no": 149,
+   "name": "Varthuru",
+   "pop2011_in_domain": 25067,
+   "cells": 2691,
+   "centroid": [
+    77.73361,
+    12.93537
+   ]
+  },
+  {
+   "id": 44,
+   "no": 150,
+   "name": "Bellanduru",
+   "pop2011_in_domain": 20526,
+   "cells": 2647,
+   "centroid": [
+    77.68021,
+    12.92287
+   ]
+  },
+  {
+   "id": 45,
+   "no": 151,
+   "name": "Koramangala",
+   "pop2011_in_domain": 35359,
+   "cells": 370,
+   "centroid": [
+    77.62465,
+    12.93134
+   ]
+  },
+  {
+   "id": 46,
+   "no": 152,
+   "name": "Suddagunte Palya",
+   "pop2011_in_domain": 35910,
+   "cells": 174,
+   "centroid": [
+    77.60821,
+    12.92997
+   ]
+  },
+  {
+   "id": 47,
+   "no": 153,
+   "name": "Jayanagar",
+   "pop2011_in_domain": 35963,
+   "cells": 240,
+   "centroid": [
+    77.58942,
+    12.93763
+   ]
+  },
+  {
+   "id": 48,
+   "no": 154,
+   "name": "Basavanagudi",
+   "pop2011_in_domain": 18284,
+   "cells": 63,
+   "centroid": [
+    77.57115,
+    12.93887
+   ]
+  },
+  {
+   "id": 49,
+   "no": 166,
+   "name": "Karisandra",
+   "pop2011_in_domain": 30206,
+   "cells": 110,
+   "centroid": [
+    77.57402,
+    12.92435
+   ]
+  },
+  {
+   "id": 50,
+   "no": 167,
+   "name": "Yediyur",
+   "pop2011_in_domain": 33145,
+   "cells": 121,
+   "centroid": [
+    77.57644,
+    12.93438
+   ]
+  },
+  {
+   "id": 51,
+   "no": 168,
+   "name": "Pattabhiram Nagar",
+   "pop2011_in_domain": 30989,
+   "cells": 169,
+   "centroid": [
+    77.58755,
+    12.92455
+   ]
+  },
+  {
+   "id": 52,
+   "no": 169,
+   "name": "Byrasandra",
+   "pop2011_in_domain": 30638,
+   "cells": 83,
+   "centroid": [
+    77.58894,
+    12.9316
+   ]
+  },
+  {
+   "id": 53,
+   "no": 170,
+   "name": "Jayanagar East",
+   "pop2011_in_domain": 30846,
+   "cells": 101,
+   "centroid": [
+    77.59864,
+    12.92111
+   ]
+  },
+  {
+   "id": 54,
+   "no": 171,
+   "name": "Gurappanapalya",
+   "pop2011_in_domain": 35828,
+   "cells": 68,
+   "centroid": [
+    77.60462,
+    12.92287
+   ]
+  },
+  {
+   "id": 55,
+   "no": 172,
+   "name": "Madivala",
+   "pop2011_in_domain": 35155,
+   "cells": 119,
+   "centroid": [
+    77.61442,
+    12.92002
+   ]
+  },
+  {
+   "id": 56,
+   "no": 173,
+   "name": "Jakkasandra",
+   "pop2011_in_domain": 24088,
+   "cells": 150,
+   "centroid": [
+    77.63099,
+    12.92059
+   ]
+  },
+  {
+   "id": 57,
+   "no": 174,
+   "name": "HSR Layout",
+   "pop2011_in_domain": 24749,
+   "cells": 708,
+   "centroid": [
+    77.64643,
+    12.91372
+   ]
+  },
+  {
+   "id": 58,
+   "no": 175,
+   "name": "Bommanahalli",
+   "pop2011_in_domain": 24307,
+   "cells": 186,
+   "centroid": [
+    77.62121,
+    12.90074
+   ]
+  },
+  {
+   "id": 59,
+   "no": 176,
+   "name": "BTM Layout",
+   "pop2011_in_domain": 34436,
+   "cells": 214,
+   "centroid": [
+    77.60935,
+    12.91184
+   ]
+  },
+  {
+   "id": 60,
+   "no": 177,
+   "name": "J P Nagar",
+   "pop2011_in_domain": 28508,
+   "cells": 181,
+   "centroid": [
+    77.59451,
+    12.91088
+   ]
+  },
+  {
+   "id": 61,
+   "no": 178,
+   "name": "Sarakki",
+   "pop2011_in_domain": 26707,
+   "cells": 137,
+   "centroid": [
+    77.58295,
+    12.90794
+   ]
+  },
+  {
+   "id": 62,
+   "no": 179,
+   "name": "Shakambari Nagar",
+   "pop2011_in_domain": 23239,
+   "cells": 186,
+   "centroid": [
+    77.57977,
+    12.91709
+   ]
+  },
+  {
+   "id": 63,
+   "no": 180,
+   "name": "Banashankari Temple ward",
+   "pop2011_in_domain": 23809,
+   "cells": 47,
+   "centroid": [
+    77.57103,
+    12.91241
+   ]
+  },
+  {
+   "id": 64,
+   "no": 186,
+   "name": "Jaraganahalli",
+   "pop2011_in_domain": 23299,
+   "cells": 134,
+   "centroid": [
+    77.57749,
+    12.90042
+   ]
+  },
+  {
+   "id": 65,
+   "no": 187,
+   "name": "Puttenahalli",
+   "pop2011_in_domain": 20544,
+   "cells": 286,
+   "centroid": [
+    77.5906,
+    12.89732
+   ]
+  },
+  {
+   "id": 66,
+   "no": 188,
+   "name": "Bilekhalli",
+   "pop2011_in_domain": 22510,
+   "cells": 423,
+   "centroid": [
+    77.61016,
+    12.89916
+   ]
+  },
+  {
+   "id": 67,
+   "no": 189,
+   "name": "Hongasandra",
+   "pop2011_in_domain": 23058,
+   "cells": 212,
+   "centroid": [
+    77.62752,
+    12.89677
+   ]
+  },
+  {
+   "id": 68,
+   "no": 190,
+   "name": "Mangammanapalya",
+   "pop2011_in_domain": 27391,
+   "cells": 352,
+   "centroid": [
+    77.64182,
+    12.89617
+   ]
+  },
+  {
+   "id": 69,
+   "no": 191,
+   "name": "Singasandra",
+   "pop2011_in_domain": 21117,
+   "cells": 936,
+   "centroid": [
+    77.65751,
+    12.88135
+   ]
+  },
+  {
+   "id": 70,
+   "no": 193,
+   "name": "Arakere",
+   "pop2011_in_domain": 23931,
+   "cells": 610,
+   "centroid": [
+    77.60284,
+    12.87972
+   ]
+  },
+  {
+   "id": 71,
+   "no": 195,
+   "name": "Konankunte",
+   "pop2011_in_domain": 20079,
+   "cells": 339,
+   "centroid": [
+    77.57996,
+    12.88577
+   ]
+  }
+ ],
+ "lakes": [
+  {
+   "id": 0,
+   "osm_id": 19751547,
+   "name": "Bellandur Lake",
+   "area_ha": 315.4,
+   "cells": 319
+  },
+  {
+   "id": 1,
+   "osm_id": 19306126,
+   "name": "Varthur Lake",
+   "area_ha": 154.3,
+   "cells": 151
+  },
+  {
+   "id": 2,
+   "osm_id": 2310417,
+   "name": "Madiwala Lake",
+   "area_ha": 84.8,
+   "cells": 88
+  },
+  {
+   "id": 3,
+   "osm_id": 1186908539,
+   "name": "Sarjapur Doddakere Lake",
+   "area_ha": 78.5,
+   "cells": 34
+  },
+  {
+   "id": 4,
+   "osm_id": 19509697,
+   "name": "Begur Lake",
+   "area_ha": 43.6,
+   "cells": 41
+  },
+  {
+   "id": 5,
+   "osm_id": 23000626,
+   "name": "Hulimavu Lake",
+   "area_ha": 41.1,
+   "cells": 28
+  },
+  {
+   "id": 6,
+   "osm_id": 1857615,
+   "name": "Halasuru lake",
+   "area_ha": 39.5,
+   "cells": 39
+  },
+  {
+   "id": 7,
+   "osm_id": 20742762,
+   "name": "Doddanekundi Lake",
+   "area_ha": 38.0,
+   "cells": 35
+  },
+  {
+   "id": 8,
+   "osm_id": 8469370,
+   "name": "Agara Lake",
+   "area_ha": 27.5,
+   "cells": 26
+  },
+  {
+   "id": 9,
+   "osm_id": 119132391,
+   "name": "Rayasandra Lake",
+   "area_ha": 27.3,
+   "cells": 22
+  },
+  {
+   "id": 10,
+   "osm_id": 125758396,
+   "name": "Gattahalli Lake",
+   "area_ha": 25.6,
+   "cells": 25
+  },
+  {
+   "id": 11,
+   "osm_id": 1069600852,
+   "name": "Halanayakanahalli Lake",
+   "area_ha": 24.3,
+   "cells": 25
+  },
+  {
+   "id": 12,
+   "osm_id": 9269383,
+   "name": "Sarakki Kere",
+   "area_ha": 22.3,
+   "cells": 22
+  },
+  {
+   "id": 13,
+   "osm_id": 148216683,
+   "name": "Gunjuru Lake",
+   "area_ha": 20.6,
+   "cells": 21
+  },
+  {
+   "id": 14,
+   "osm_id": 27993463,
+   "name": "Chikka Bellanduru Lake",
+   "area_ha": 20.2,
+   "cells": 21
+  },
+  {
+   "id": 15,
+   "osm_id": 6820030,
+   "name": "Kaikondrahalli Lake",
+   "area_ha": 16.7,
+   "cells": 15
+  },
+  {
+   "id": 16,
+   "osm_id": 350098022,
+   "name": "Saul Kere",
+   "area_ha": 16.5,
+   "cells": 16
+  },
+  {
+   "id": 17,
+   "osm_id": 16071328,
+   "name": "Kodigehalli Lake",
+   "area_ha": 15.5,
+   "cells": 12
+  },
+  {
+   "id": 18,
+   "osm_id": 133729401,
+   "name": "Hosakere",
+   "area_ha": 12.9,
+   "cells": 14
+  },
+  {
+   "id": 19,
+   "osm_id": 1088209009,
+   "name": "Gunjuru Palya Lake",
+   "area_ha": 12.8,
+   "cells": 11
+  },
+  {
+   "id": 20,
+   "osm_id": 62381586,
+   "name": "Kasavanahalli Lake",
+   "area_ha": 12.7,
+   "cells": 13
+  },
+  {
+   "id": 21,
+   "osm_id": 172845847,
+   "name": "Lalbagh Tank",
+   "area_ha": 12.4,
+   "cells": 11
+  },
+  {
+   "id": 22,
+   "osm_id": 18772594,
+   "name": "Kaggadasapura Lake",
+   "area_ha": 11.9,
+   "cells": 10
+  },
+  {
+   "id": 23,
+   "osm_id": 1092941881,
+   "name": "Dommasandra Lake",
+   "area_ha": 11.8,
+   "cells": 12
+  },
+  {
+   "id": 24,
+   "osm_id": 8250847,
+   "name": "Lal Bahadur Shastri Nagar Lake",
+   "area_ha": 11.5,
+   "cells": 12
+  },
+  {
+   "id": 25,
+   "osm_id": 666261980,
+   "name": "",
+   "area_ha": 11.2,
+   "cells": 11
+  },
+  {
+   "id": 26,
+   "osm_id": 1062555441,
+   "name": "Chikkabelanduru Kere",
+   "area_ha": 10.8,
+   "cells": 9
+  },
+  {
+   "id": 27,
+   "osm_id": 1147126248,
+   "name": "Neriga Lake",
+   "area_ha": 10.5,
+   "cells": 9
+  },
+  {
+   "id": 28,
+   "osm_id": 119132971,
+   "name": "Chikka Beguru Lake",
+   "area_ha": 9.8,
+   "cells": 9
+  },
+  {
+   "id": 29,
+   "osm_id": 130111880,
+   "name": "Nallurahalli Lake",
+   "area_ha": 8.9,
+   "cells": 9
+  },
+  {
+   "id": 30,
+   "osm_id": 1092941882,
+   "name": "Thiagalara Chowdenahalli Lake",
+   "area_ha": 8.8,
+   "cells": 9
+  },
+  {
+   "id": 31,
+   "osm_id": 1283528233,
+   "name": "Sompura Lake",
+   "area_ha": 8.7,
+   "cells": 10
+  },
+  {
+   "id": 32,
+   "osm_id": 111563782,
+   "name": "Haralur Lake",
+   "area_ha": 7.9,
+   "cells": 6
+  },
+  {
+   "id": 33,
+   "osm_id": 33300618,
+   "name": "Hoodi Lake",
+   "area_ha": 7.7,
+   "cells": 7
+  },
+  {
+   "id": 34,
+   "osm_id": 17426667,
+   "name": "Mahadevapura Lake",
+   "area_ha": 7.6,
+   "cells": 7
+  },
+  {
+   "id": 35,
+   "osm_id": 1283528232,
+   "name": "Yamare Lake",
+   "area_ha": 7.6,
+   "cells": 9
+  },
+  {
+   "id": 36,
+   "osm_id": 19509700,
+   "name": "Arekere Lake",
+   "area_ha": 7.5,
+   "cells": 8
+  },
+  {
+   "id": 37,
+   "osm_id": 120904870,
+   "name": "Kundalahalli Lake",
+   "area_ha": 7.5,
+   "cells": 9
+  },
+  {
+   "id": 38,
+   "osm_id": 1428287262,
+   "name": "",
+   "area_ha": 7.3,
+   "cells": 7
+  },
+  {
+   "id": 39,
+   "osm_id": 14671536,
+   "name": "Thubarahalli Lake",
+   "area_ha": 7.2,
+   "cells": 8
+  },
+  {
+   "id": 40,
+   "osm_id": 19427514,
+   "name": "Choodasandra Lake",
+   "area_ha": 7.1,
+   "cells": 8
+  },
+  {
+   "id": 41,
+   "osm_id": 17083906,
+   "name": "Doddakannelli Lake",
+   "area_ha": 7.0,
+   "cells": 6
+  },
+  {
+   "id": 42,
+   "osm_id": 1092680601,
+   "name": "Sulakunte Lake",
+   "area_ha": 6.9,
+   "cells": 7
+  },
+  {
+   "id": 43,
+   "osm_id": 251505668,
+   "name": "",
+   "area_ha": 6.7,
+   "cells": 5
+  },
+  {
+   "id": 44,
+   "osm_id": 33541358,
+   "name": "Chunchagatta Lake",
+   "area_ha": 6.5,
+   "cells": 5
+  },
+  {
+   "id": 45,
+   "osm_id": 239873610,
+   "name": "",
+   "area_ha": 6.3,
+   "cells": 5
+  },
+  {
+   "id": 46,
+   "osm_id": 3127245,
+   "name": "Benniganahalli Lake",
+   "area_ha": 6.0,
+   "cells": 6
+  },
+  {
+   "id": 47,
+   "osm_id": 477154739,
+   "name": "Hadosiddapura Lake",
+   "area_ha": 5.9,
+   "cells": 6
+  },
+  {
+   "id": 48,
+   "osm_id": 1092680603,
+   "name": "Kodathi Kere",
+   "area_ha": 5.4,
+   "cells": 6
+  },
+  {
+   "id": 49,
+   "osm_id": 666480244,
+   "name": "",
+   "area_ha": 5.4,
+   "cells": 7
+  },
+  {
+   "id": 50,
+   "osm_id": 1428287261,
+   "name": "",
+   "area_ha": 4.9,
+   "cells": 3
+  },
+  {
+   "id": 51,
+   "osm_id": 182177278,
+   "name": "Kadiranpalaya Kere",
+   "area_ha": 4.9,
+   "cells": 7
+  },
+  {
+   "id": 52,
+   "osm_id": 1092680606,
+   "name": "Hegondanahalli Lake",
+   "area_ha": 4.8,
+   "cells": 6
+  },
+  {
+   "id": 53,
+   "osm_id": 866148184,
+   "name": "Pattandur Agrahara Lake",
+   "area_ha": 4.5,
+   "cells": 4
+  },
+  {
+   "id": 54,
+   "osm_id": 45860708,
+   "name": "Sheelavathana Kere",
+   "area_ha": 4.5,
+   "cells": 4
+  },
+  {
+   "id": 55,
+   "osm_id": 118415616,
+   "name": "Krishna Nagara Lake",
+   "area_ha": 4.5,
+   "cells": 5
+  },
+  {
+   "id": 56,
+   "osm_id": 18077306,
+   "name": "Munekolala Lake",
+   "area_ha": 4.5,
+   "cells": 5
+  },
+  {
+   "id": 57,
+   "osm_id": 1265835944,
+   "name": "",
+   "area_ha": 4.3,
+   "cells": 5
+  },
+  {
+   "id": 58,
+   "osm_id": 350153647,
+   "name": "Parappana Agrahara Lake",
+   "area_ha": 4.3,
+   "cells": 5
+  },
+  {
+   "id": 59,
+   "osm_id": 17062035,
+   "name": "Panathuru Kere",
+   "area_ha": 4.2,
+   "cells": 5
+  },
+  {
+   "id": 60,
+   "osm_id": 172938152,
+   "name": "Byrasandra Melina Kere",
+   "area_ha": 4.1,
+   "cells": 4
+  },
+  {
+   "id": 61,
+   "osm_id": 18077307,
+   "name": "Seetharampalya Lake",
+   "area_ha": 4.1,
+   "cells": 3
+  },
+  {
+   "id": 62,
+   "osm_id": 1434880597,
+   "name": "",
+   "area_ha": 3.9,
+   "cells": 4
+  },
+  {
+   "id": 63,
+   "osm_id": 9362927,
+   "name": "Yediyur Lake",
+   "area_ha": 3.9,
+   "cells": 4
+  },
+  {
+   "id": 64,
+   "osm_id": 17083842,
+   "name": "Deverabisanahalli Lake",
+   "area_ha": 3.8,
+   "cells": 3
+  },
+  {
+   "id": 65,
+   "osm_id": 790389588,
+   "name": "Bhoganahalli Lake",
+   "area_ha": 3.7,
+   "cells": 4
+  },
+  {
+   "id": 66,
+   "osm_id": 122129754,
+   "name": "Pattandur Agrahara Kunte",
+   "area_ha": 3.5,
+   "cells": 4
+  },
+  {
+   "id": 67,
+   "osm_id": 408869074,
+   "name": "K100",
+   "area_ha": 3.5,
+   "cells": 4
+  },
+  {
+   "id": 68,
+   "osm_id": 1435133939,
+   "name": "",
+   "area_ha": 3.5,
+   "cells": 3
+  },
+  {
+   "id": 69,
+   "osm_id": 3507925,
+   "name": "Puttenhalli Lake",
+   "area_ha": 3.5,
+   "cells": 4
+  },
+  {
+   "id": 70,
+   "osm_id": 27993889,
+   "name": "Ambalipura Upper Lake",
+   "area_ha": 3.4,
+   "cells": 3
+  },
+  {
+   "id": 71,
+   "osm_id": 1421748891,
+   "name": "Devara Kere",
+   "area_ha": 3.4,
+   "cells": 4
+  },
+  {
+   "id": 72,
+   "osm_id": 135051892,
+   "name": "Hoodi Lake",
+   "area_ha": 3.4,
+   "cells": 3
+  },
+  {
+   "id": 73,
+   "osm_id": 450584259,
+   "name": "",
+   "area_ha": 3.4,
+   "cells": 3
+  },
+  {
+   "id": 74,
+   "osm_id": 18077303,
+   "name": "Kudlu Lake/Kere",
+   "area_ha": 3.3,
+   "cells": 3
+  },
+  {
+   "id": 75,
+   "osm_id": 673852352,
+   "name": "",
+   "area_ha": 3.2,
+   "cells": 3
+  },
+  {
+   "id": 76,
+   "osm_id": 350096397,
+   "name": "K100",
+   "area_ha": 3.1,
+   "cells": 1
+  },
+  {
+   "id": 77,
+   "osm_id": 232880644,
+   "name": "",
+   "area_ha": 2.9,
+   "cells": 3
+  },
+  {
+   "id": 78,
+   "osm_id": 111871740,
+   "name": "Begur Kere",
+   "area_ha": 2.9,
+   "cells": 4
+  },
+  {
+   "id": 79,
+   "osm_id": 17223075,
+   "name": "Byrasandra Lake",
+   "area_ha": 2.9,
+   "cells": 2
+  },
+  {
+   "id": 80,
+   "osm_id": 28126428,
+   "name": "Byrasandra Lake",
+   "area_ha": 2.6,
+   "cells": 2
+  },
+  {
+   "id": 81,
+   "osm_id": 287327440,
+   "name": "Somasundarapalya Lake",
+   "area_ha": 2.5,
+   "cells": 3
+  },
+  {
+   "id": 82,
+   "osm_id": 18077308,
+   "name": "",
+   "area_ha": 2.4,
+   "cells": 2
+  },
+  {
+   "id": 83,
+   "osm_id": 3120373,
+   "name": "Iblur Lake",
+   "area_ha": 2.4,
+   "cells": 2
+  },
+  {
+   "id": 84,
+   "osm_id": 781696180,
+   "name": "",
+   "area_ha": 2.4,
+   "cells": 3
+  },
+  {
+   "id": 85,
+   "osm_id": 427568008,
+   "name": "",
+   "area_ha": 2.3,
+   "cells": 2
+  },
+  {
+   "id": 86,
+   "osm_id": 6183523,
+   "name": "Chinnappanahalli Lake",
+   "area_ha": 2.3,
+   "cells": 4
+  },
+  {
+   "id": 87,
+   "osm_id": 324206934,
+   "name": "",
+   "area_ha": 2.3,
+   "cells": 1
+  },
+  {
+   "id": 88,
+   "osm_id": 111871772,
+   "name": "Basapura Lake",
+   "area_ha": 2.2,
+   "cells": 3
+  },
+  {
+   "id": 89,
+   "osm_id": 232981265,
+   "name": "Ambalipura Lower Lake",
+   "area_ha": 2.2,
+   "cells": 2
+  },
+  {
+   "id": 90,
+   "osm_id": 408869075,
+   "name": "K100",
+   "area_ha": 2.2,
+   "cells": 1
+  },
+  {
+   "id": 91,
+   "osm_id": 1092680608,
+   "name": "Hagondahalli Lake",
+   "area_ha": 2.1,
+   "cells": 1
+  },
+  {
+   "id": 92,
+   "osm_id": 27993527,
+   "name": "Carmelaram Lake",
+   "area_ha": 2.1,
+   "cells": 2
+  },
+  {
+   "id": 93,
+   "osm_id": 133729402,
+   "name": "Singasandra Lake",
+   "area_ha": 2.0,
+   "cells": 3
+  },
+  {
+   "id": 94,
+   "osm_id": 926197122,
+   "name": "",
+   "area_ha": 2.0,
+   "cells": 4
+  },
+  {
+   "id": 95,
+   "osm_id": 324206936,
+   "name": "",
+   "area_ha": 1.9,
+   "cells": 3
+  },
+  {
+   "id": 96,
+   "osm_id": 217565213,
+   "name": "",
+   "area_ha": 1.9,
+   "cells": 2
+  },
+  {
+   "id": 97,
+   "osm_id": 18077304,
+   "name": "ITI Layout Lake",
+   "area_ha": 1.7,
+   "cells": 1
+  },
+  {
+   "id": 98,
+   "osm_id": 1259323926,
+   "name": "",
+   "area_ha": 1.6,
+   "cells": 0
+  },
+  {
+   "id": 99,
+   "osm_id": 1234104579,
+   "name": "",
+   "area_ha": 1.5,
+   "cells": 2
+  },
+  {
+   "id": 100,
+   "osm_id": 367594183,
+   "name": "",
+   "area_ha": 1.5,
+   "cells": 0
+  },
+  {
+   "id": 101,
+   "osm_id": 217565211,
+   "name": "",
+   "area_ha": 1.5,
+   "cells": 1
+  },
+  {
+   "id": 102,
+   "osm_id": 673791606,
+   "name": "",
+   "area_ha": 1.5,
+   "cells": 1
+  },
+  {
+   "id": 103,
+   "osm_id": 373570583,
+   "name": "",
+   "area_ha": 1.4,
+   "cells": 0
+  },
+  {
+   "id": 104,
+   "osm_id": 673542929,
+   "name": "",
+   "area_ha": 1.4,
+   "cells": 1
+  },
+  {
+   "id": 105,
+   "osm_id": 781696169,
+   "name": "",
+   "area_ha": 1.4,
+   "cells": 2
+  },
+  {
+   "id": 106,
+   "osm_id": 408869071,
+   "name": "K100",
+   "area_ha": 1.3,
+   "cells": 1
+  },
+  {
+   "id": 107,
+   "osm_id": 1259323929,
+   "name": "",
+   "area_ha": 1.3,
+   "cells": 2
+  },
+  {
+   "id": 108,
+   "osm_id": 17426666,
+   "name": "Goshala Lake",
+   "area_ha": 1.3,
+   "cells": 3
+  },
+  {
+   "id": 109,
+   "osm_id": 135398428,
+   "name": "B Narayanapura Lake",
+   "area_ha": 1.2,
+   "cells": 1
+  },
+  {
+   "id": 110,
+   "osm_id": 126890297,
+   "name": "Akshaynagar Lake",
+   "area_ha": 1.2,
+   "cells": 1
+  },
+  {
+   "id": 111,
+   "osm_id": 1082724729,
+   "name": "",
+   "area_ha": 1.2,
+   "cells": 0
+  },
+  {
+   "id": 112,
+   "osm_id": 95639129,
+   "name": "Garudacharpalya Lake",
+   "area_ha": 1.1,
+   "cells": 1
+  },
+  {
+   "id": 113,
+   "osm_id": 331515387,
+   "name": "",
+   "area_ha": 1.1,
+   "cells": 1
+  },
+  {
+   "id": 114,
+   "osm_id": 487959501,
+   "name": "",
+   "area_ha": 1.1,
+   "cells": 2
+  },
+  {
+   "id": 115,
+   "osm_id": 1452328747,
+   "name": "",
+   "area_ha": 1.0,
+   "cells": 2
+  }
+ ],
+ "sources": [
+  "Copernicus GLO-30 DEM",
+  "ESA WorldCover 2021",
+  "OpenStreetMap (ODbL)",
+  "datameet BBMP wards, Census 2011"
+ ]
+}
