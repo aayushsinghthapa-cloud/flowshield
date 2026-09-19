@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import base64
 import json
+import os
 import uuid
 from collections import OrderedDict
 from functools import lru_cache
@@ -278,5 +279,13 @@ def run_scenario(req: SimulateIn) -> dict:
 app.include_router(api)
 
 DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
-if DIST.exists():
-    app.mount("/", StaticFiles(directory=DIST, html=True), name="frontend")
+
+
+def mount_frontend() -> None:
+    """Serve the built React app at / (must be the last mount: it catches every path)."""
+    if DIST.exists():
+        app.mount("/", StaticFiles(directory=DIST, html=True), name="frontend")
+
+
+if not os.environ.get("FLOWSHIELD_DEFER_FRONTEND"):
+    mount_frontend()

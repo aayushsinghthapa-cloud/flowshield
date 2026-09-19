@@ -104,7 +104,12 @@ cd backend && ../.venv/bin/python -m pytest -q
 cd backend && ../.venv/bin/python -m pipeline.build_city
 ```
 
-**Single container (deploy):** `docker build -t flowshield . && docker run -p 7860:7860 --env-file .env flowshield`. It works as a Hugging Face Space (Docker SDK) or on Render or Railway.
+**Deploy (free Hugging Face Space, Gradio SDK, CPU basic):**
+```bash
+.venv/bin/pip install huggingface_hub
+HF_TOKEN=<write-token> .venv/bin/python deploy/push_hf.py <hf-username>/flowshield --set-secret
+```
+[deploy/hf_app.py](deploy/hf_app.py) becomes the Space's `app.py`. It runs the same FastAPI app, which serves the API and the pre-built dashboard on port 7860. A [Dockerfile](Dockerfile) is also provided for Docker hosts.
 
 ## Boilerplate and libraries used
 
