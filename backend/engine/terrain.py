@@ -80,15 +80,20 @@ def load_city(data_dir: Path = DATA) -> City:
 
 
 def coarsen(city: City, k: int = 2) -> City:
-    """Aggregate k×k blocks (used for fast ensemble runs). Elevation/fractions are
-    averaged, population summed, ids take the block's most common non-empty value."""
-    R, C = (city.z.shape[0] // k) * k, (city.z.shape[1] // k) * k
+    """Aggregate k x k blocks for fast runs. The grid is padded (not trimmed) so the
+    coarse grid covers exactly the same ground extent. Elevation and land-cover
+    fractions are averaged, population summed, ids take the block's commonest value."""
+    R, C = city.z.shape
+    pr, pc = (-R) % k, (-C) % k
 
-    def blocks(a):
-        return a[:R, :C].reshape(R // k, k, C // k, k).swapaxes(1, 2).reshape(R // k, C // k, k * k)
+    def blocks(a, mode="edge", value=0):
+        pad = np.pad(a, ((0, pr), (0, pc)), mode=mode) if mode == "edge" \
+            else np.pad(a, ((0, pr), (0, pc)), mode="constant", constant_values=value)
+        r, c = pad.shape
+        return pad.reshape(r // k, k, c // k, k).swapaxes(1, 2).reshape(r // k, c // k, k * k)
 
     def mode_id(a, min_count=1):
-        b = blocks(a)
+        b = blocks(a, mode="constant", value=-1)
         out = np.full(b.shape[:2], -1, dtype=np.int32)
         for i in range(k * k):
             v = b[..., i]
@@ -102,7 +107,7 @@ def coarsen(city: City, k: int = 2) -> City:
         lake_id=mode_id(city.lake_id, min_count=(k * k) // 2),
         drain_id=mode_id(city.drain_id),
         ward_id=mode_id(city.ward_id),
-        pop=blocks(city.pop).sum(-1),
+        pop=blocks(city.pop, mode="constant").sum(-1),
         frac={n: blocks(v).mean(-1) for n, v in city.frac.items()},
         cell=city.cell * k,
         meta=city.meta,

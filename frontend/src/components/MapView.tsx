@@ -211,14 +211,20 @@ export default function MapView(p: Props) {
     const { result, frame, mode, city } = handlers.current
     if (!m || !ready.current) return
     const ctx = canvas.current.getContext('2d')!
-    const [rows, cols] = city.shape
+    // The run may be on the 200 m preview grid, which has its own shape/kind.
+    const [rows, cols] = result?.shape ?? city.shape
+    const kinds = result?.kind ?? city.kind
+    if (canvas.current.width !== cols || canvas.current.height !== rows) {
+      canvas.current.width = cols
+      canvas.current.height = rows
+    }
     const img = ctx.createImageData(cols, rows)
     const data = img.data
     if (result && result.frames[frame]) {
       const f = result.frames[frame]
       const { warning_m, critical_m } = result.params.thresholds
       for (let i = 0; i < f.length; i++) {
-        const k = city.kind[i]
+        const k = kinds[i]
         if (k === LAKE) continue
         const d = f[i] / 1000
         let c: [number, number, number, number]

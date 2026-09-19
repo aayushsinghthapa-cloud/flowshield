@@ -173,8 +173,13 @@ export default function ResultsPanel({ result, recordIdx, selectedWard, onSelect
       </div>
 
       <div className="text-[11px] text-slate-500 font-mono">
-        mass-balance error {r.mass_balance.max_abs_error.toExponential(1)} · {r.steps} steps · {r.runtime_s}s
+        {r.cell_m} m grid · mass-balance error {r.mass_balance.max_abs_error.toExponential(1)} · {r.steps} steps · {r.runtime_s}s
       </div>
+      {r.cell_m === 200 && (
+        <p className="text-[11px] text-amber-300/80">
+          Fast preview on the aggregated 200 m grid. Ward-level detail is coarser here; switch to the 100 m grid for final numbers.
+        </p>
+      )}
     </div>
   )
 }

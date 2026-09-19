@@ -135,7 +135,7 @@ def simulate(dom: Domain, rain: Rain, rp: RunParams | None = None) -> RunResult:
         hfx_s = np.where(wet, hfx, 1.0)
         nfx = 0.5 * (n2[:, :-1] + n2[:, 1:])
         qx = (qx - G * hfx_s * dt * (eta[:, 1:] - eta[:, :-1]) / dx) / \
-             (1.0 + G * dt * nfx * np.abs(qx) / hfx_s ** (7.0 / 3.0))
+             (1.0 + G * dt * nfx * np.abs(qx) / _pow73(hfx_s))
         qx = np.where(wet, qx, 0.0)
         lim = hfx_s * np.sqrt(G * hfx_s)          # Froude <= 1 cap for stability
         np.clip(qx, -lim, lim, out=qx)
@@ -145,7 +145,7 @@ def simulate(dom: Domain, rain: Rain, rp: RunParams | None = None) -> RunResult:
         hfy_s = np.where(wet, hfy, 1.0)
         nfy = 0.5 * (n2[:-1, :] + n2[1:, :])
         qy = (qy - G * hfy_s * dt * (eta[1:, :] - eta[:-1, :]) / dx) / \
-             (1.0 + G * dt * nfy * np.abs(qy) / hfy_s ** (7.0 / 3.0))
+             (1.0 + G * dt * nfy * np.abs(qy) / _pow73(hfy_s))
         qy = np.where(wet, qy, 0.0)
         lim = hfy_s * np.sqrt(G * hfy_s)
         np.clip(qy, -lim, lim, out=qy)
@@ -207,6 +207,11 @@ def simulate(dom: Domain, rain: Rain, rp: RunParams | None = None) -> RunResult:
     return RunResult(times_min=np.arange(n_rec) * rp.record_min, depth=depth, rain_mm_hr=rain_rec,
                      volume=vol, v_in=vin_rec, v_out=vout_rec, v_inf=vinf_rec, mass_error=err,
                      dt_series=dt_rec, steps=steps, runtime_s=time.perf_counter() - t0)
+
+
+def _pow73(h: np.ndarray) -> np.ndarray:
+    """h^(7/3) as h*h*cbrt(h): identical value, ~2.5x faster than a fractional power."""
+    return h * h * np.cbrt(h)
 
 
 def _add_edges(arr: np.ndarray, vals: np.ndarray, R: int, Cc: int) -> None:

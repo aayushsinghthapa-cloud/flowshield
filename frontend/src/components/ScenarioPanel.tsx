@@ -162,6 +162,16 @@ export default function ScenarioPanel({ city, params, onChange, onRun, running, 
         )}
       </section>
 
+      <div className="flex rounded-md border border-slate-700 overflow-hidden text-xs">
+        {([200, 100] as const).map((g) => (
+          <button key={g} onClick={() => set({ grid_m: g })}
+            className={`flex-1 px-2 py-1.5 ${params.grid_m === g ? 'bg-slate-700 text-white' : 'bg-slate-800/60 text-slate-400 hover:text-slate-200'}`}
+            title={g === 200 ? 'Aggregated 200 m grid: about 8x faster, good for exploring' : 'Full 100 m grid: slower, use for final numbers'}>
+            {g === 200 ? 'Fast preview 200 m' : 'Detailed 100 m'}
+          </button>
+        ))}
+      </div>
+
       <button className="btn-primary w-full" onClick={onRun} disabled={running}>
         {running ? 'Simulating…' : 'Run simulation'}
       </button>

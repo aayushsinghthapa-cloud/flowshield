@@ -25,7 +25,7 @@ from engine.ensemble import run_members
 from engine.rainfall import Rain
 from engine.scenarios import PRESETS
 from engine.simulate import RunParams, simulate
-from engine.terrain import DATA, LAKE, LAND, DomainParams, build_domain, load_city
+from engine.terrain import DATA, LAKE, LAND, DomainParams, build_domain, coarsen, load_city
 from live import weather
 
 load_dotenv(Path(__file__).resolve().parents[2] / ".env")
@@ -42,6 +42,12 @@ CENTROID = (12.935, 77.675)  # catchment centre for point weather queries
 @lru_cache(maxsize=1)
 def city():
     return load_city()
+
+
+@lru_cache(maxsize=2)
+def city_at(grid_m: int):
+    """The 100 m grid, or a 200 m aggregation of it for fast previews."""
+    return city() if grid_m == 100 else coarsen(city(), grid_m // 100)
 
 
 def b64(arr: np.ndarray) -> str:
@@ -84,6 +90,7 @@ class SimulateIn(BaseModel):
     inflow_m3s: float = Field(0.0, ge=0, le=500)
     inflow_hours: float = Field(6.0, ge=0, le=48)
     thresholds: ThresholdsIn = ThresholdsIn()
+    grid_m: Literal[100, 200] = 100   # 200 m = fast preview
 
 
 # ---------------------------------------------------------------- routes
@@ -200,7 +207,7 @@ def ai_status():
 
 
 def run_scenario(req: SimulateIn) -> dict:
-    c = city()
+    c = city_at(req.grid_m)
     n_drains = len(json.loads((DATA / "drains.geojson").read_text())["features"]) \
         if req.blocked_drains else 0
     if any(d < 0 or d >= n_drains for d in req.blocked_drains):
@@ -252,6 +259,9 @@ def run_scenario(req: SimulateIn) -> dict:
 
     return {
         "params": req.model_dump(),
+        "shape": list(dom.kind.shape),
+        "cell_m": dom.cell,
+        "kind": b64(dom.kind.astype(np.uint8)),
         "times_min": res.times_min.tolist(),
         "frame_times_min": res.times_min[::step].tolist(),
         # All frames as one zlib stream of little-endian uint16 millimetres (mostly zeros,

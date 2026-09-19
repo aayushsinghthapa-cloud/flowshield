@@ -31,6 +31,7 @@ export interface ScenarioParams {
   inflow_m3s: number
   inflow_hours: number
   thresholds: Thresholds
+  grid_m: 100 | 200
 }
 
 export interface WardInfo {
@@ -78,6 +79,9 @@ export interface WardResult {
 export interface SimResult {
   run_id: string
   params: ScenarioParams
+  shape: [number, number]
+  cell_m: number
+  kind: Uint8Array
   times_min: number[]
   frame_times_min: number[]
   frames: Uint16Array[]
@@ -154,7 +158,7 @@ export async function runSimulation(p: ScenarioParams): Promise<SimResult> {
   const size = rows * cols
   const frames = Array.from({ length: n }, (_, i) => all.subarray(i * size, (i + 1) * size))
   delete raw.frames_z
-  return { ...raw, frames }
+  return { ...raw, frames, kind: new Uint8Array(decode(raw.kind)) }
 }
 
 export const DEFAULT_PARAMS: ScenarioParams = {
@@ -177,6 +181,7 @@ export const DEFAULT_PARAMS: ScenarioParams = {
   inflow_m3s: 0,
   inflow_hours: 6,
   thresholds: { warning_m: 0.15, critical_m: 0.3, ward_percentile: 95 },
+  grid_m: 200,
 }
 
 export function fmtEta(min: number | null): string {
