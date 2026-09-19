@@ -36,7 +36,7 @@ def run_ensemble(members: list[list[float]], scale: float = 1.0, dp: DomainParam
                  th: Thresholds | None = None, workers: int | None = None) -> dict:
     dp = dp or DomainParams()
     th = th or Thresholds()
-    workers = workers or max(1, min(len(members), (os.cpu_count() or 2)))
+    workers = workers or max(1, min(len(members), os.cpu_count() or 2, int(os.environ.get("ENSEMBLE_WORKERS", 4))))
     jobs = [(m, scale, dp, th) for m in members]
     with ProcessPoolExecutor(max_workers=workers) as ex:
         results = list(ex.map(_run_member, jobs))

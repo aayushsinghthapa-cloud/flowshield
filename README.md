@@ -123,5 +123,5 @@ All project code was written during the hackathon window.
 - Forecast and reanalysis rain underestimate cloudbursts. A peak factor is provided for stress tests.
 - The model is not calibrated against observed depths. It is a decision-support prototype, not an official forecast.
 
-## Team and roles
-_TBD_
+## Team
+**Team Kalos.** Hack-a-Matics 2026.
