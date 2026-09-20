@@ -1,7 +1,8 @@
 """Anthropic Claude client. Live calls only: on failure we raise and the UI shows it.
 
-Structured output is done with a single forced tool whose input schema is the Pydantic
-model, which is Anthropic's equivalent of Gemini's response_schema.
+Structured output uses the API's native JSON-schema mode through `messages.parse`,
+which takes the Pydantic model directly and returns a validated instance, so a
+malformed bulletin cannot reach the UI.
 """
 from __future__ import annotations
 
@@ -15,7 +16,6 @@ from .gemini import AIError
 DEFAULT_MODEL = "claude-sonnet-5"
 # Retried on the same model: a brief capacity blip or a rate-limit bucket refill.
 RETRYABLE = ("overloaded", "rate_limit", "429", "529", "500", "api_error")
-TOOL = "record_answer"
 
 
 def model_name() -> str:
@@ -28,6 +28,8 @@ def configured() -> bool:
 
 def generate_json(system: str, prompt: str, schema: type[BaseModel],
                   temperature: float = 0.2) -> tuple[BaseModel, dict]:
+    # temperature is accepted for a common signature with the Gemini client; this
+    # SDK version does not expose it on messages.parse.
     key = os.environ.get("ANTHROPIC_API_KEY")
     if not key:
         raise AIError("ANTHROPIC_API_KEY is not set on the server")
@@ -38,11 +40,6 @@ def generate_json(system: str, prompt: str, schema: type[BaseModel],
 
     client = anthropic.Anthropic(api_key=key, timeout=90.0, max_retries=0)
     model = model_name()
-    tool = {
-        "name": TOOL,
-        "description": "Record the answer in the required structure.",
-        "input_schema": schema.model_json_schema(),
-    }
     t0 = time.perf_counter()
     attempts: list[str] = []
     msg = None
@@ -50,13 +47,11 @@ def generate_json(system: str, prompt: str, schema: type[BaseModel],
         if wait:
             time.sleep(wait)
         try:
-            msg = client.messages.create(
+            msg = client.messages.parse(
                 model=model,
                 max_tokens=2048,
-                temperature=temperature,
                 system=system,
-                tools=[tool],
-                tool_choice={"type": "tool", "name": TOOL},
+                output_format=schema,
                 messages=[{"role": "user", "content": prompt}],
             )
             break
@@ -68,13 +63,9 @@ def generate_json(system: str, prompt: str, schema: type[BaseModel],
     if msg is None:
         raise AIError("Claude is unavailable right now: " + " | ".join(attempts[-2:]))
 
-    block = next((b for b in msg.content if getattr(b, "type", None) == "tool_use"), None)
-    if block is None:
+    parsed = msg.parsed_output
+    if parsed is None:
         raise AIError("Claude did not return the structured answer")
-    try:
-        parsed = schema.model_validate(block.input)
-    except Exception as e:
-        raise AIError(f"Claude returned output that does not match the schema: {e}") from e
 
     meta = {
         "provider": "Anthropic",

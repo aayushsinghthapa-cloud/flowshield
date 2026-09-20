@@ -204,14 +204,14 @@ def ai_bulletin(req: BulletinIn):
 @api.get("/ai/status")
 def ai_status():
     from ai import claude, gemini
+    names = {"Google": gemini.model_name, "Anthropic": claude.model_name}
     order = providers()
     return {
         "configured": bool(order),
         "providers": order,
         "primary": order[0] if order else None,
-        "model": claude.model_name() if claude.configured() else
-                 (gemini.model_name() if gemini.configured() else None),
-        "fallback_model": gemini.model_name() if claude.configured() and gemini.configured() else None,
+        "model": names[order[0]]() if order else None,
+        "fallback_model": names[order[1]]() if len(order) > 1 else None,
     }
 
 

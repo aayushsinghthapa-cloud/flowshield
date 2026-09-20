@@ -39,7 +39,7 @@ FlowShield makes this cascade visible and lets you test "what if this drain is b
 - Interactive time slider.
 
 ### Extras that make it usable
-- **Plain-English scenarios** (Gemini) with a confirm step.
+- **Plain-English scenarios** (live LLM) with a confirm step.
 - **Live forecast run** on Open-Meteo rain, with soil wetness set from the past 24 h.
 - **Chance of flooding**: 31 GFS ensemble members simulated individually → per-ward probability.
 - **Sept 2022-style preset**: a reconstructed extreme event (labelled as reconstructed, not a hindcast).
@@ -59,8 +59,10 @@ FlowShield makes this cascade visible and lets you test "what if this drain is b
 
 FlowShield calls a large language model **live from the backend on every request**, through **two independent providers** so that one outage or one exhausted quota cannot take the feature down:
 
-1. **Anthropic Claude** (`claude-sonnet-5`, official `anthropic` SDK). Structured output comes from a single forced tool whose input schema is the Pydantic model.
-2. **Google Gemini** (`gemini-3.5-flash`, official `google-genai` SDK) as the free fallback, itself chained across seven Flash models because the free tier allows only 20 requests per day per model.
+1. **Google Gemini** (`gemini-3.5-flash`, official `google-genai` SDK) answers in about 5 s, so it drives the demo. Its free tier allows only 20 requests per day *per model*, so it is chained across seven Flash models.
+2. **Anthropic Claude** (`claude-sonnet-5`, official `anthropic` SDK, native JSON-schema structured output via `messages.parse`) is the backstop: slower (~20 s, since a Kannada alert is a lot of tokens) and paid, but it has no daily cap and writes the best Kannada. It takes over automatically when Gemini's quota runs out.
+
+Set `AI_PROVIDER_ORDER="anthropic,google"` to lead with Claude instead.
 
 The UI badge always names the model that actually answered, and marks it with `↳` when it was a fallback — so what is on screen is always attributable to a real call. Either key alone is enough to run the project; see `.env.example`.
 
@@ -85,7 +87,7 @@ The model is a local-inertial shallow-water scheme (Bates et al., 2010) on a con
 - lake bathymetry with weirs
 - an adaptive CFL time step
 
-The mass-balance error is **≤ 3 × 10⁻¹³** on the real grid, and 11 automated tests verify conservation, positivity, lake-at-rest, symmetry and monotonic response. Full derivation: **[docs/model.md](docs/model.md)**.
+The mass-balance error is **≤ 3 × 10⁻¹³** on the real grid, and 12 automated tests verify conservation, positivity, lake-at-rest, symmetry and monotonic response. Full derivation: **[docs/model.md](docs/model.md)**.
 
 ## Data (all free and public)
 
@@ -103,7 +105,7 @@ Copernicus GLO-30 DEM · ESA WorldCover 2021 · OpenStreetMap (lakes, drains) ·
                                          FastAPI ── engine/ (pure NumPy: terrain, simulate,
                                             │                 classify, ensemble)
                                             ├── live/weather.py ── Open-Meteo (live)
-                                            └── ai/ ── Gemini (live): scenario parser, bulletin, grounding
+                                            └── ai/ ── llm.py ── Gemini, then Claude (live): scenario, bulletin, grounding
 ```
 
 ## Run locally
@@ -111,7 +113,7 @@ Copernicus GLO-30 DEM · ESA WorldCover 2021 · OpenStreetMap (lakes, drains) ·
 ```bash
 # Backend (Python 3.11+)
 python3.11 -m venv .venv && .venv/bin/pip install -r backend/requirements-dev.txt
-cp .env.example .env        # add GEMINI_API_KEY (free at aistudio.google.com)
+cp .env.example .env        # add GEMINI_API_KEY and/or ANTHROPIC_API_KEY
 .venv/bin/uvicorn api.index:app --port 8000
 
 # Frontend (dev, proxies /api to :8000)

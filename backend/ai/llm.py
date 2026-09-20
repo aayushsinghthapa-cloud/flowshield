@@ -3,37 +3,54 @@
 Two independent providers, tried in order, so one outage or one exhausted quota does
 not take the AI features down:
 
-  1. Anthropic Claude  - paid, reliable, best at writing natural Kannada.
-  2. Google Gemini     - free tier, 20 requests per day per model across a chain of
-                         Flash models, used when Claude is unavailable or unconfigured.
+  1. Google Gemini     - free, and answers in about 5 s, so it drives the demo. Its
+                         free tier allows only 20 requests per day per model, which
+                         is why it is chained across several Flash models.
+  2. Anthropic Claude  - paid and slower (~20 s, because a Kannada alert is a lot of
+                         tokens), but it has no daily cap and writes the best Kannada.
+                         It is the backstop for when Gemini's quota runs out mid-demo.
+
+Set AI_PROVIDER_ORDER="anthropic,google" to lead with Claude instead.
 
 Every answer carries the provider and model that produced it, and the UI shows them,
 so what you see on screen is always attributable to a real, live call.
 """
 from __future__ import annotations
 
+import os
+
 from pydantic import BaseModel
 
 from . import claude, gemini
 from .gemini import AIError
 
+MODULES = {"google": (gemini, "Google"), "anthropic": (claude, "Anthropic")}
+DEFAULT_ORDER = "google,anthropic"
+
+
+def _chain() -> list[tuple[str, object]]:
+    """(display name, module) for each configured provider, in the order to try."""
+    names = [n.strip().lower() for n in
+             (os.environ.get("AI_PROVIDER_ORDER") or DEFAULT_ORDER).split(",")]
+    seen, chain = set(), []
+    for n in names:
+        if n in MODULES and n not in seen:
+            seen.add(n)
+            mod, label = MODULES[n]
+            if mod.configured():
+                chain.append((label, mod))
+    return chain
+
 
 def providers() -> list[str]:
     """The providers this server could actually call, in the order they are tried."""
-    order = []
-    if claude.configured():
-        order.append("Anthropic")
-    if gemini.configured():
-        order.append("Google")
-    return order
+    return [label for label, _ in _chain()]
 
 
 def generate_json(system: str, prompt: str, schema: type[BaseModel],
                   temperature: float = 0.2) -> tuple[BaseModel, dict]:
     errors: list[str] = []
-    for name, mod in (("Anthropic", claude), ("Google", gemini)):
-        if not mod.configured():
-            continue
+    for name, mod in _chain():
         try:
             parsed, meta = mod.generate_json(system, prompt, schema, temperature)
             meta.setdefault("provider", name)
