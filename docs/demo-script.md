@@ -1,89 +1,146 @@
-# Demo video script — 2 minutes
+# Demo video script, 2 minutes
 
-Voiceover over a screen recording. Plain words, one connected story, no jargon.
+Read the **SAY** lines out loud. Do the **DO** lines while you say them.
+About 1 minute 57 seconds at a normal talking pace.
+
+Before you press record: open the site, run one storm so it is warm, switch the grid to
+**Detailed 100 m**, and close the "How to read this" box.
 
 ---
 
-## Read this straight through
+## 1 · The problem · 0:00 to 0:12
 
-This is the whole thing as one piece. Say it out loud twice before you record, so it
-sounds like you talking and not like you reading.
+**SAY**
+> Bengaluru's lakes were built as a chain. When one fills up, it spills into the next
+> through a drain. But people built on top of those drains. So now the water ends up
+> in homes.
 
-> Bengaluru's lakes were built as a chain — when one fills, it spills into the next through
-> a drain. But people built on top of those drains. So now the water ends up in people's homes.
->
+**DO**
+Start on the map, zoomed so Madiwala, Agara, Bellandur and Varthur are all visible.
+Click nothing. Just let it sit there while you talk.
+
+---
+
+## 2 · Real data · 0:12 to 0:26
+
+**SAY**
 > Everything you see is real. The land comes from satellites. The lakes and drains come
-> from OpenStreetMap — a hundred and sixteen lakes, over a thousand drains. And every
-> ward knows how many people live there.
->
-> So, a heavy storm. Concrete can't soak the rain up, so it runs off. The drains take
-> what they can, and the rest rolls downhill. Watch the lakes — Madiwala fills, spills into
-> Agara, then Bellandur. That's the chain doing its job. And no water is ever lost
-> or invented.
->
+> from OpenStreetMap. A hundred and sixteen lakes, over a thousand drains. And every ward
+> knows how many people live there.
+
+**DO**
+Move your cursor slowly along the thin blue drain lines, then circle one or two of the
+blue lakes. Move slowly. A fast cursor looks nervous on video.
+
+---
+
+## 3 · Start the storm · 0:26 to 0:36
+
+**SAY**
+> So, a heavy storm. Concrete can't soak the rain up, so it runs off. The drains take what
+> they can, and the rest rolls downhill.
+
+**DO**
+Left panel: click **Heavy storm**, then **Run simulation**. When it finishes, press the
+blue **play** button under the map.
+
+---
+
+## 4 · The lake chain · 0:36 to 0:46 · slow down here
+
+**SAY**
+> Watch the lakes. Madiwala fills, spills into Agara, then Bellandur. That's the chain
+> doing its job. And no water is ever lost or invented.
+
+**DO**
+Scroll the right panel down to **Lake cascade**. Point at the bars as they fill, one after
+another. Let the animation keep playing behind you.
+
+---
+
+## 5 · Who floods, and when · 0:46 to 1:02
+
+**SAY**
 > Fifteen centimetres of moving water knocks you over. Thirty floats a car. Cross that
-> line, and a ward turns red. Five wards flood, Bharathi Nagar first — two hours in, thirty-eight
-> thousand people in the water.
->
-> But here's the part that matters. I block one real drain near Ejipura. Just one. Same storm
-> again. Now Ejipura floods too — two hours twelve, three times the people.
-> That's what one blocked drain costs. Not an opinion. A number.
->
-> Of course, that only helps if someone can act. So the AI writes the warning — what officials do
-> first, and a message for everyone else, in English and Kannada.
-> Every number gets checked against the simulation first. Fifteen, all checked. Nothing
-> written ahead of time.
->
-> Last thing — does it match a real flood? In September 2022, Bengaluru went under. We gave
-> it that night's rain, and it found nine of the ten places that really flooded. In October it
-> missed — that one was on single streets, too small for us to see. We show that too.
-> FlowShield. Predict the flood, protect the future.
+> line, and a ward turns red. Five wards flood. Bharathi Nagar first, two hours in, with
+> thirty eight thousand people in the water.
+
+**DO**
+Scroll the right panel back to the top. Point at the big red verdict, then run your cursor
+down the ward list so the times and people counts are on screen.
 
 ---
 
-## What to click, and when
+## 6 · Block a drain · 1:02 to 1:22 · your strongest moment
 
-| Time | You're saying | On screen |
-|---|---|---|
-| 0:00 | "Bengaluru's lakes were built as a chain…" | Map, zoomed on Madiwala → Agara → Bellandur → Varthur |
-| 0:12 | "Everything you see is real…" | Move the cursor slowly along the blue drain lines, then the lakes |
-| 0:26 | "So, a heavy storm." | Click **Heavy storm** → **Run** → **play** |
-| 0:34 | "Watch the lakes…" | Point at the **Lake cascade** bars filling one after another |
-| 0:46 | "Fifteen centimetres…" | The verdict card, then the ward list with the times |
-| 1:02 | "I block one real drain near Ejipura…" | **Block a drain** → click the drain → **Run** → open **Compare** |
-| 1:22 | "So the AI writes the warning…" | The bulletin. Point at **✓ numbers verified**, then click **ಕನ್ನಡ** |
-| 1:40 | "Last thing — does it match a real flood?" | **Model** tab → *Checked against a real flood*, then the amber panel |
-| 1:55 | "Predict the flood, protect the future." | Leave the map on screen |
+**SAY**
+> But here's the part that matters. I block one real drain near Ejipura. Just one. Same
+> storm again. Now Ejipura floods too. Two hours twelve, three times the people. That's
+> what one blocked drain costs. Not an opinion. A number.
 
-**Slow down twice**, because these are the bits people remember: the lakes spilling one
-into the next (0:34), and Ejipura turning red after you block the drain (1:12).
+**DO**
+1. Press **Save** first, so this run is kept.
+2. Click **Block a drain**, then click the drain near Ejipura on the map.
+3. **Run simulation**, then press **Save** again.
+4. Open the **Compare** tab so both runs sit side by side.
+
+*(Skip that first Save and Compare will only show one run.)*
 
 ---
 
-## Left out on purpose
+## 7 · The warning · 1:22 to 1:40
 
-Bring these up only if a judge asks. Each costs 15–20 seconds, and you've already earned
-those marks elsewhere: the 31-forecast chance map, the equations on the Model tab, the CSV
-download and share link, the phone layout, and the plain-English scenario box.
+**SAY**
+> Of course, that only helps if someone can act. So the AI writes the warning. What
+> officials should do first, and a message for everyone else, in English and in Kannada.
+> Every number gets checked against the simulation first. Nothing written ahead of time.
 
-## Before you hit record
+**DO**
+Back to **Simulator**. Scroll the right panel to **Early warning bulletin** and click
+**Write with AI** *before* you start this sentence, because it takes 8 to 20 seconds.
+Keep talking while it writes. When the green **numbers verified** tick appears, point at
+it, then click **ಕನ್ನಡ**.
 
-- [ ] Switch the grid to **Detailed 100 m** — that's where the numbers you say come from
-- [ ] Open the site once and run one storm, so it's warm (a cold start takes about 7 seconds)
-- [ ] Close the "How to read this" box so it can't pop up in the middle
-- [ ] Have your Kannada reader check the message once
-- [ ] Zoom at 100%, no bookmarks bar, notifications off
-- [ ] Finished video is **under 2:00**, and the link opens in a private window
+---
 
-> **The bulletin takes 8 to 20 seconds to write.** Don't sit in silence waiting for it.
-> Click **Write with AI**, keep talking through the line about every number being checked,
-> and come back to it when the green tick shows up. The free plan allows 20 of these a day
-> per model, so practise this bit a few times, not twenty.
+## 8 · Does it work, and the close · 1:40 to 2:00
+
+**SAY**
+> Last thing. Does it match a real flood? In September 2022, Bengaluru went under. We gave
+> it that night's rain, and it found nine of the ten places that really flooded. In October
+> it missed. That one was on single streets, too small for us to see. FlowShield. Predict
+> the flood, protect the future.
+
+**DO**
+Open the **Model** tab, scroll to **Checked against a real flood**, show the table of ten
+places, then scroll a little further to the amber box under it. Finish back on the map and
+leave it on screen.
+
+---
+
+## Three things that will trip you up
+
+1. **Cold start.** First load takes about 7 seconds. Warm the site before you record.
+2. **The bulletin is slow.** Never sit in silence. Click the button early, talk over it.
+3. **Compare needs two saves.** One before you block the drain, one after.
+
+## Leave these out
+
+Mention them only if a judge asks. Each costs 15 to 20 seconds and you already earned
+those marks: the 31 forecast chance map, the equations on the Model tab, CSV download and
+share links, the phone layout, and the plain English scenario box.
+
+## Last checks
+
+- [ ] Grid on **Detailed 100 m**
+- [ ] Kannada message checked by your Kannada reader
+- [ ] Zoom 100 percent, no bookmarks bar, notifications off
+- [ ] Video under 2:00, link opens in a private window
 
 ## If a judge asks how accurate it is
 
-> "It's good at big floods that fill whole valleys, and it can't spot one flooded underpass.
-> That's on the Model tab. We tried tuning it to fix that, and we wrote down that it
-> didn't work."
+> "It's good at big floods that fill whole valleys, and it can't spot one flooded
+> underpass. That's on the Model tab. We tried tuning it to fix that, and we wrote down
+> that it didn't work."
 
-Saying the weak part yourself scores better than hiding it — and it's already on screen.
+Saying the weak part yourself scores better than hiding it, and it is already on screen.
