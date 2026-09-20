@@ -57,7 +57,7 @@ FlowShield makes this cascade visible and lets you test "what if this drain is b
 
 ## AI component
 
-FlowShield uses **Google Gemini** (via the official `google-genai` Python SDK), **called live from the backend** for every request. The default model is `gemini-3.6-flash`. If it is overloaded, the backend retries and then falls back to `gemini-3.5-flash` and then `gemini-flash-latest`. The UI badge always shows which model answered.
+FlowShield uses **Google Gemini** (via the official `google-genai` Python SDK), **called live from the backend** for every request. The default model is `gemini-3.5-flash`. If it is overloaded or out of free-tier quota, the backend falls back to `gemini-3.6-flash` and then `gemini-flash-latest`. The UI badge always shows which model actually answered, so you can see the fallback happen.
 
 | | What it does | What the model sees | Safeguards |
 |---|---|---|---|

@@ -63,7 +63,16 @@ Show the ✓ verified badge and switch to the ಕನ್ನಡ tab.
 ## Checklist before recording
 - [ ] Detailed 100 m grid selected
 - [ ] Live URL warm (open it once, run one simulation)
-- [ ] Gemini key working (generate one bulletin as a test)
+- [ ] Dismiss the "How to read this" intro once, so it does not pop up mid-take
+      (or leave it for the opening shot on purpose — it explains the dashboard well)
+- [ ] Gemini key working (generate **one** bulletin as a test, no more)
+
+> **Gemini free-tier quota.** Each bulletin is a live call and the free tier is
+> limited per minute. Do not click "Write with AI" repeatedly while rehearsing: if the
+> quota runs out, every model in the fallback chain returns 429 and the panel shows a
+> plain "quota exhausted, wait a minute" message. That is honest behaviour, not a bug —
+> nothing is cached, by design — but it is not what you want on camera. Leave a minute
+> between bulletin calls, and generate the one you film on the take itself.
 - [ ] Kannada text reviewed by a Kannada reader
 - [ ] Browser zoom 100%, window 1600×1000
 - [ ] Video is 2:00–3:00, link works in an incognito window
