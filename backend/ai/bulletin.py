@@ -9,7 +9,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
-from .gemini import generate_json
+from .llm import generate_json
 from .grounding import check
 
 

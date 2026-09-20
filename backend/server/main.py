@@ -18,7 +18,8 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from ai.bulletin import write as write_bulletin
-from ai.gemini import AIError, model_name
+from ai.gemini import AIError
+from ai.llm import providers
 from ai.scenario_parser import parse as parse_scenario
 from engine.classify import STATUS_NAMES, Thresholds, classify
 from engine.ensemble import run_members
@@ -202,8 +203,16 @@ def ai_bulletin(req: BulletinIn):
 
 @api.get("/ai/status")
 def ai_status():
-    import os
-    return {"configured": bool(os.environ.get("GEMINI_API_KEY")), "model": model_name()}
+    from ai import claude, gemini
+    order = providers()
+    return {
+        "configured": bool(order),
+        "providers": order,
+        "primary": order[0] if order else None,
+        "model": claude.model_name() if claude.configured() else
+                 (gemini.model_name() if gemini.configured() else None),
+        "fallback_model": gemini.model_name() if claude.configured() and gemini.configured() else None,
+    }
 
 
 def run_scenario(req: SimulateIn) -> dict:

@@ -274,6 +274,8 @@ export async function runEnsemble(body: {
 
 // ---------------------------------------------------------------- AI
 export interface AIMeta {
+  provider?: string
+  fell_back_from?: string
   model: string
   retries: number
   latency_s: number

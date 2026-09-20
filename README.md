@@ -57,14 +57,19 @@ FlowShield makes this cascade visible and lets you test "what if this drain is b
 
 ## AI component
 
-FlowShield uses **Google Gemini** (via the official `google-genai` Python SDK), **called live from the backend** for every request. The default model is `gemini-3.5-flash`. If it is overloaded or out of free-tier quota, the backend falls back to `gemini-3.6-flash` and then `gemini-flash-latest`. The UI badge always shows which model actually answered, so you can see the fallback happen.
+FlowShield calls a large language model **live from the backend on every request**, through **two independent providers** so that one outage or one exhausted quota cannot take the feature down:
+
+1. **Anthropic Claude** (`claude-sonnet-5`, official `anthropic` SDK). Structured output comes from a single forced tool whose input schema is the Pydantic model.
+2. **Google Gemini** (`gemini-3.5-flash`, official `google-genai` SDK) as the free fallback, itself chained across seven Flash models because the free tier allows only 20 requests per day per model.
+
+The UI badge always names the model that actually answered, and marks it with `↳` when it was a fallback — so what is on screen is always attributable to a real call. Either key alone is enough to run the project; see `.env.example`.
 
 | | What it does | What the model sees | Safeguards |
 |---|---|---|---|
 | **A1 · Natural-language scenario builder** | Turns text like "130 mm in 3 h, lakes full, drain near Ejipura blocked" into simulator parameters | The user's text plus the list of real ward and lake names | Structured JSON schema; every value clamped to model ranges; place names resolved to real OSM drain ids; **the user confirms before anything runs** |
 | **A2 · Early-warning bulletin** | Writes a severity level, an authority advisory and an SMS-style public alert in **English and Kannada** | Only a compact JSON of this run's results (critical wards, ETAs, people, lake levels, optional ensemble probabilities) | Prompt forbids new numbers; a **grounding check** verifies every number in the output against that JSON and shows ✓/⚠ |
 
-**No AI output is hardcoded, cached or faked.** If Gemini is unavailable, the UI shows the error and generates nothing. The API key stays server-side in `.env`.
+**No AI output is hardcoded, cached or faked.** If every provider is unavailable, the UI shows the error and generates nothing. API keys stay server-side in `.env`; nothing is ever sent to the browser.
 
 ## Understand it in 5 minutes
 

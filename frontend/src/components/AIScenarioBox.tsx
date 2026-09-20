@@ -52,7 +52,7 @@ export default function AIScenarioBox({ onConfirm, busy }: Props) {
 
       {p && parsed && (
         <div className="mt-3 rounded-[10px] border border-line p-2.5">
-          <AIBadge model={parsed.ai.model} latency={parsed.ai.latency_s} />
+          <AIBadge model={parsed.ai.model} latency={parsed.ai.latency_s} provider={parsed.ai.provider} fellBackFrom={parsed.ai.fell_back_from} />
           <p className="text-[12px] italic text-ink-2 mt-1.5">“{p.summary}”</p>
           <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[12px]">
             <dt className="text-ink-2">Rain</dt>

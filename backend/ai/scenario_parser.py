@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 
 from engine.terrain import DATA
 
-from .gemini import generate_json
+from .llm import generate_json
 
 BLOCK_RADIUS_M = 700.0
 

@@ -33,6 +33,10 @@ def model_name() -> str:
     return os.environ.get("GEMINI_MODEL") or DEFAULT_MODEL
 
 
+def configured() -> bool:
+    return bool(os.environ.get("GEMINI_API_KEY"))
+
+
 def generate_json(system: str, prompt: str, schema: type[BaseModel], temperature: float = 0.2) -> tuple[BaseModel, dict]:
     """Call Gemini with a response schema; return (parsed model, call metadata)."""
     key = os.environ.get("GEMINI_API_KEY")

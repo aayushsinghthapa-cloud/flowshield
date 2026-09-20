@@ -46,7 +46,7 @@ export default function BulletinPanel({ result, ensemble }: { result: SimResult;
       {b && (
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-1.5">
-            <AIBadge model={b.ai.model} latency={b.ai.latency_s} />
+            <AIBadge model={b.ai.model} latency={b.ai.latency_s} provider={b.ai.provider} fellBackFrom={b.ai.fell_back_from} />
             <span className={`chip ${b.grounding.ok ? 'bg-safe-soft text-safe' : 'bg-warn-soft text-warn'}`}
               title="Every number in the text is checked against the simulation output.">
               {b.grounding.ok ? `✓ ${b.grounding.numbers_checked} numbers verified` : `⚠ unverified: ${b.grounding.unverified.join(', ')}`}

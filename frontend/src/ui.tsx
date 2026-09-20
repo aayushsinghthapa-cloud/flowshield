@@ -81,13 +81,19 @@ export function Spinner({ className = '' }: { className?: string }) {
   )
 }
 
-export function AIBadge({ model, latency }: { model: string; latency?: number }) {
+export function AIBadge({ model, latency, provider, fellBackFrom }: {
+  model: string
+  latency?: number
+  provider?: string
+  fellBackFrom?: string
+}) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-[#f3eafe] px-2 py-0.5 text-[11px] font-medium text-[#6b21a8]">
+    <span className="inline-flex items-center gap-1 rounded-full bg-[#f3eafe] px-2 py-0.5 text-[11px] font-medium text-[#6b21a8]"
+      title={fellBackFrom ? `${fellBackFrom} was unavailable, so ${provider ?? 'the fallback provider'} answered` : undefined}>
       <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
         <path d="M12 2l2.2 6.1L20 10l-5.8 1.9L12 18l-2.2-6.1L4 10l5.8-1.9z" />
       </svg>
-      AI · {model}{latency !== undefined ? ` · ${latency}s` : ''}
+      {fellBackFrom ? '↳ ' : ''}{model}{latency !== undefined ? ` · ${latency}s` : ''}
     </span>
   )
 }
