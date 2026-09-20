@@ -269,6 +269,33 @@ export default function ModelTab({ result }: { result: SimResult | null }) {
           </Section>
         </div>
       </div>
+
+      <Section title="Built with">
+        <div className="grid md:grid-cols-2 gap-x-8 gap-y-4">
+          <div>
+            <div className="text-[13px] font-medium mb-1">Team Kalos</div>
+            <p className="text-[12px] text-ink-2 leading-snug">
+              Aayush Singh Thapa · Nishant Saud · Rajat Bellbase · Shubham Kunwar Tiwary
+            </p>
+            <p className="text-[11px] text-ink-3 leading-snug mt-2">
+              Hack-a-Matics 2026 · Pentagram, BMSCE × IEEE Computer Society · theme VECTOR, problem FLOWSHIELD.
+              Project code is MIT licensed; the data keeps its own licences.
+            </p>
+          </div>
+          <div>
+            <div className="text-[13px] font-medium mb-1">Open source we depend on</div>
+            <p className="text-[12px] text-ink-2 leading-snug">
+              NumPy · SciPy · FastAPI · Pydantic · Uvicorn · httpx · React · MapLibre GL JS · Recharts · KaTeX ·
+              Tailwind CSS · Vite · TypeScript · rasterio/GDAL · Shapely/GEOS · pyproj/PROJ · pytest
+            </p>
+            <p className="text-[11px] text-ink-3 leading-snug mt-2">
+              Data: Copernicus GLO-30 DEM · ESA WorldCover 2021 · OpenStreetMap (ODbL) · BBMP wards and Census 2011
+              via datameet · Open-Meteo · Esri basemap. Full versions, licences and papers:{' '}
+              <span className="num">CREDITS.md</span>.
+            </p>
+          </div>
+        </div>
+      </Section>
     </div>
   )
 }

@@ -13,7 +13,9 @@ Reachability of every source below was checked on 19 Sep 2026, 20:20 IST.
 | Live rainfall | Open-Meteo Forecast API | `https://api.open-meteo.com/v1/forecast` | CC BY 4.0 | Live-forecast scenario |
 | Ensemble rainfall | Open-Meteo Ensemble API | `https://ensemble-api.open-meteo.com/v1/ensemble` | CC BY 4.0 | Ward critical-probability |
 | Historical rainfall | Open-Meteo Archive (ERA5) | `https://archive-api.open-meteo.com/v1/archive` | CC BY 4.0 | Event replay context |
-| Basemap | OpenFreeMap | `https://tiles.openfreemap.org/styles/liberty` | OSM/ODbL | Map background |
+| Basemap tiles | Esri World Light Gray Base + Reference | `https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer` | Esri terms, attributed on the map | Map background |
+| Map label fonts | OpenFreeMap glyphs | `https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf` | OSM/ODbL | MapLibre text rendering |
+| Geocoding (validation only) | OpenStreetMap Nominatim | `https://nominatim.openstreetmap.org/search` | ODbL, usage policy respected | Placing reported flood localities into wards |
 
 ## Known caveats
 

@@ -112,42 +112,130 @@ Copernicus GLO-30 DEM · ESA WorldCover 2021 · OpenStreetMap (lakes, drains) ·
                                             └── ai/ ── llm.py ── Gemini, then Claude (live): scenario, bulletin, grounding
 ```
 
-## Run locally
+## Installation
+
+### Prerequisites
+
+| Requirement | Version | Why |
+|---|---|---|
+| Python | **3.11 or 3.12** | The engine uses 3.11+ syntax. Avoid 3.14 — the geospatial wheels used by the optional pipeline are not published for it yet. |
+| Node.js | **20+** | Vite 8 requires it. |
+| An LLM API key | either one | `GEMINI_API_KEY` (free, [aistudio.google.com/apikey](https://aistudio.google.com/apikey)) and/or `ANTHROPIC_API_KEY` ([platform.claude.com](https://platform.claude.com)). Either alone is enough; with both, Gemini is used first and Claude is the fallback. |
+
+No database, no Docker and no paid service is required. The processed city data is
+committed to the repo, so you do **not** need to run the data pipeline to start.
+
+### 1. Clone and set up the backend
 
 ```bash
-# Backend (Python 3.11+)
-python3.11 -m venv .venv && .venv/bin/pip install -r backend/requirements-dev.txt
-cp .env.example .env        # add GEMINI_API_KEY and/or ANTHROPIC_API_KEY
-.venv/bin/uvicorn api.index:app --port 8000
+git clone https://github.com/aayushsinghthapa-cloud/flowshield.git
+cd flowshield
 
-# Frontend (dev, proxies /api to :8000)
-cd frontend && npm install && npm run dev      # http://localhost:5173
+python3.11 -m venv .venv
+.venv/bin/pip install -r backend/requirements-dev.txt
 
-# Tests
-cd backend && ../.venv/bin/python -m pytest -q
+cp .env.example .env        # then edit .env and paste in your key(s)
+```
 
-# Rebuild the city data from source (optional)
+### 2. Run the API
+
+```bash
+cd backend && ../.venv/bin/python -m uvicorn server.main:app --port 8000
+```
+
+Check it: `curl localhost:8000/api/health` → `{"status":"ok"}`
+and `curl localhost:8000/api/ai/status` to confirm your key was picked up.
+
+### 3. Run the dashboard
+
+```bash
+cd frontend
+npm install
+npm run dev          # http://localhost:5173 — proxies /api to :8000
+```
+
+For a production build that the API serves itself on `http://localhost:8000`:
+
+```bash
+cd frontend && npm run build
+```
+
+### 4. Verify the install
+
+```bash
+cd backend && ../.venv/bin/python -m pytest -q        # 12 physics tests
+cd frontend && npx tsc -b                             # type check
+```
+
+### Optional: rebuild the city data from source
+
+Only needed if you want to change the bounding box or grid resolution. This downloads
+the DEM, land cover, OSM drains and ward boundaries and rewrites `backend/data/`
+(takes several minutes and needs the heavier geospatial wheels):
+
+```bash
 .venv/bin/pip install -r backend/requirements-pipeline.txt
 cd backend && ../.venv/bin/python -m pipeline.build_city
 ```
+
+### Optional: reproduce the validation
+
+Needs Shapely (for point-in-polygon) and network access (for Nominatim geocoding, cached
+after the first run):
+
+```bash
+.venv/bin/pip install "shapely>=2.0"
+cd backend && ../.venv/bin/python -m validation.sept2022          # scored run
+cd backend && ../.venv/bin/python -m validation.sept2022 --sweep  # sensitivity
+```
+
+See **[docs/validation.md](docs/validation.md)** for the method, sources and results.
+
+## Technologies implemented
+
+| Layer | Technology |
+|---|---|
+| **Numerical model** | Local-inertial shallow-water equations (Bates et al. 2010) in vectorised NumPy; adaptive CFL time step; priority-flood DEM conditioning (Barnes et al. 2014); dasymetric population mapping |
+| **Backend** | Python 3.11, FastAPI, Pydantic, Uvicorn, httpx, zlib frame compression |
+| **Frontend** | React 19, TypeScript, Vite 8, Tailwind CSS v4, MapLibre GL JS 5, Recharts 3, KaTeX |
+| **AI** | Google Gemini (`google-genai`) with Anthropic Claude (`anthropic`) as a second provider; JSON-schema structured output; a regex grounding check on every number |
+| **Geospatial (offline)** | rasterio/GDAL, Shapely/GEOS, pyproj/PROJ; Copernicus GLO-30 DEM, ESA WorldCover, OpenStreetMap, BBMP wards |
+| **Live data** | Open-Meteo forecast, 31-member GFS ensemble and ERA5 archive |
+| **Deployment** | Vercel Hobby (static dashboard + one Python serverless function); Dockerfile included for any container host |
+| **Testing** | pytest (12 physics tests), `tsc` type checking, headless-Chrome UI walkthrough |
 
 ## Deploy (free: Vercel Hobby)
 
 [vercel.json](vercel.json) builds the dashboard as static files and deploys the FastAPI app as one Python function ([api/index.py](api/index.py)) serving `/api/*`.
 1. On vercel.com, choose **Add New → Project** and import this GitHub repo. Keep the defaults, since `vercel.json` sets everything.
-2. Under **Environment Variables**, add `GEMINI_API_KEY`.
+2. Under **Environment Variables**, add `GEMINI_API_KEY` and/or `ANTHROPIC_API_KEY`.
 3. Click **Deploy**.
 
-The ensemble is split by the browser into 4 parallel function calls. A [Dockerfile](Dockerfile) is also included for any Docker host (`uvicorn server.main:app`).
+The ensemble is split by the browser into 8 parallel function calls. A [Dockerfile](Dockerfile) is also included for any Docker host (`uvicorn server.main:app`).
 
-## Boilerplate and libraries used
+## Open-source credits
 
-- Frontend scaffold: `npm create vite@latest` (react-ts template).
-- **Python:** NumPy, SciPy, FastAPI, Pydantic, Uvicorn, httpx, google-genai, python-dotenv, pytest. **Pipeline only:** rasterio, shapely, pyproj, requests.
-- **JavaScript:** React, Vite, Tailwind CSS, MapLibre GL JS (v5), Recharts, KaTeX.
-- AI coding assistant (Claude Code) was used for parts of the code, per the event rules. The model design, integration and problem-solving are the team's own.
+FlowShield stands entirely on free and open-source software and openly licensed data.
+**Every library, service, dataset and paper we rely on is credited, with versions and
+licences, in [CREDITS.md](CREDITS.md).**
 
-All project code was written during the hackathon window.
+In brief — **Python:** NumPy, SciPy, FastAPI, Starlette, Pydantic, Uvicorn, httpx,
+google-genai, anthropic, python-dotenv, pytest; **pipeline only:** rasterio (GDAL),
+Shapely (GEOS), pyproj (PROJ), Requests. **JavaScript:** React, React DOM, MapLibre GL JS,
+Recharts, KaTeX, Tailwind CSS, Vite, TypeScript, oxlint. **Data:** Copernicus GLO-30 DEM,
+ESA WorldCover 2021, OpenStreetMap (ODbL), BBMP wards + Census 2011 via datameet,
+Open-Meteo. **Basemap:** Esri World Light Gray, with OpenFreeMap glyphs.
+
+FlowShield's own code is MIT licensed ([LICENSE](LICENSE)); the data keeps its own
+licences, which require attribution.
+
+**Boilerplate:** the frontend was scaffolded with `npm create vite@latest` (react-ts
+template). Everything else was written during the hackathon window.
+
+**AI tooling disclosure:** Claude Code was used while writing parts of the implementation.
+The problem framing, model design, data choices, validation methodology and integration
+decisions are the team's own. No AI output inside the running application is pre-written,
+cached or hardcoded — every response is a live API call, and failures are shown as errors.
 
 ## Assumptions and limitations
 
@@ -158,4 +246,13 @@ All project code was written during the hackathon window.
 - The model is not calibrated against observed depths. It is a decision-support prototype, not an official forecast.
 
 ## Team
-**Team Kalos.** Hack-a-Matics 2026.
+
+**Team Kalos** — Hack-a-Matics 2026 (Pentagram, BMSCE × IEEE Computer Society).
+Theme **VECTOR** · Problem statement **FLOWSHIELD**.
+
+| Member |
+|---|
+| Aayush Singh Thapa |
+| Nishant Saud |
+| Rajat Bellbase |
+| Shubham Kunwar Tiwary |

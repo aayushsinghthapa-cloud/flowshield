@@ -4,9 +4,10 @@
 one it misses it still flags as Warning. It over-predicts how *far* the flooding
 spreads, so treat the affected-population figure as an upper bound, not a forecast.**
 
-Reproduce with:
+Reproduce with (needs `shapely`, and network access on the first run for geocoding):
 
 ```bash
+.venv/bin/pip install "shapely>=2.0"
 cd backend && ../.venv/bin/python -m validation.sept2022          # the scored run
 cd backend && ../.venv/bin/python -m validation.sept2022 --sweep  # sensitivity table
 ```
