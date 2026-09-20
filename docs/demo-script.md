@@ -55,8 +55,13 @@ Show the ✓ verified badge and switch to the ಕನ್ನಡ tab.
 **2:15–2:30 · The maths and the close (screen: Model tab)**
 
 > "Under the hood: the local-inertial shallow-water equations, an adaptive time step, and a water budget that
-> closes to one part in ten-to-the-fourteen. Twelve tests keep it honest. FlowShield: predict the flood, protect
-> the future."
+> closes to one part in ten-to-the-fourteen. And we checked it against the real September 2022 flood: given that
+> night's rainfall, it finds nine of the ten places Bengaluru reported under water. FlowShield: predict the flood,
+> protect the future."
+
+Scroll to **Checked against a real flood** on the Model tab while saying this. If a judge pushes on accuracy, the
+honest answer is in the same card: it over-predicts how far flooding spreads, so the ward *ranking* is what to
+trust, not the headcount.
 
 ---
 

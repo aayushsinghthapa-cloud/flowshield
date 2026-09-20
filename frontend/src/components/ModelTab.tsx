@@ -88,6 +88,25 @@ const LIMITS = [
   'The model has not been calibrated against measured flood depths. It is decision support, not an official forecast.',
 ]
 
+const VALIDATION: [string, string, string][] = [
+  ['9 / 10', 'reported places caught', 'the 10th was flagged Warning at 23 cm'],
+  ['0.90', 'hit rate (POD)', 'of localities the press named as flooded'],
+  ['131.6 mm', 'rainfall used', 'the reported city total for that night'],
+]
+
+const VALIDATION_ROWS: [string, string, string, string][] = [
+  ['Sarjapur Road', 'Agaram', '95.8 cm', 'hit'],
+  ['Silk Board junction', 'BTM Layout', '94.6 cm', 'hit'],
+  ['Bellandur / ORR Eco Space', 'Bellanduru', '39.1 cm', 'hit'],
+  ['Bommanahalli', 'Bommanahalli', '44.2 cm', 'hit'],
+  ['Doddanekkundi', 'Dodda Nekkundi', '106.4 cm', 'hit'],
+  ['HSR Layout', 'HSR Layout', '80.8 cm', 'hit'],
+  ['Wilson Garden', 'Hombegowda Nagara', '64.2 cm', 'hit'],
+  ['ST Bed Layout, Koramangala', 'Koramangala', '96.5 cm', 'hit'],
+  ['Varthur', 'Varthuru', '38.8 cm', 'hit'],
+  ['Marathahalli, Yemalur', 'Marathahalli', '23.3 cm', 'miss'],
+]
+
 export default function ModelTab({ result }: { result: SimResult | null }) {
   const mb = result?.mass_balance
   const maxH = result ? (result.times_min[result.times_min.length - 1] ?? 0) / 60 : 0
@@ -175,6 +194,51 @@ export default function ModelTab({ result }: { result: SimResult | null }) {
           </Section>
         </div>
       )}
+
+
+      <Section title="Checked against a real flood · 4–5 Sep 2022">
+        <p className="text-[12px] text-ink-2 mb-3 max-w-3xl">
+          Bengaluru recorded <b>131.6&nbsp;mm</b> that night, its wettest September day since 2014, onto tanks already
+          full after the second wettest August on record. We geocoded the localities the press reported under water,
+          found which ward each falls in, and ran the model on that rainfall. Nothing was tuned to match.
+        </p>
+        <div className="grid sm:grid-cols-3 gap-3 mb-3">
+          {VALIDATION.map(([v, k, note]) => (
+            <div key={k} className="rounded-[10px] bg-canvas p-3">
+              <div className="text-[22px] font-semibold num leading-none">{v}</div>
+              <div className="text-[12px] font-medium mt-1">{k}</div>
+              <div className="text-[11px] text-ink-3 leading-snug mt-0.5">{note}</div>
+            </div>
+          ))}
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-[12px]">
+            <thead className="text-ink-2 text-[11px] uppercase tracking-wide text-left">
+              <tr><th className="py-1 font-medium">Reported flooded</th><th className="font-medium">Ward</th>
+                <th className="font-medium">Model peak</th><th className="font-medium">Verdict</th></tr>
+            </thead>
+            <tbody>
+              {VALIDATION_ROWS.map(([loc, ward, depth, ok]) => (
+                <tr key={ward} className="border-t border-line">
+                  <td className="py-1.5 pr-3">{loc}</td>
+                  <td className="pr-3 text-ink-2">{ward}</td>
+                  <td className="num pr-3">{depth}</td>
+                  <td className={ok === 'hit' ? 'text-safe' : 'text-warn'}>
+                    {ok === 'hit' ? '✓ Critical' : '~ Warning only'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-[11px] text-ink-3 mt-3 leading-snug max-w-3xl">
+          <b>Read this honestly.</b> The model also flags 32 wards the press never named. Coverage reports the
+          newsworthy, so that is an upper bound on false alarms rather than an error rate — but the model does
+          over-predict how far flooding spreads, because rain falls uniformly, drain capacity is a single assumed
+          number, and 100&nbsp;m cells cannot drain along a street. Trust the <b>ranking</b> of wards more than the
+          absolute headcount. Full method, sources and sensitivity table: <span className="num">docs/validation.md</span>.
+        </p>
+      </Section>
 
       <div className="grid md:grid-cols-2 gap-3">
         <Section title="Inputs and settings">

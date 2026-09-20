@@ -89,6 +89,10 @@ The model is a local-inertial shallow-water scheme (Bates et al., 2010) on a con
 
 The mass-balance error is **≤ 3 × 10⁻¹³** on the real grid, and 12 automated tests verify conservation, positivity, lake-at-rest, symmetry and monotonic response. Full derivation: **[docs/model.md](docs/model.md)**.
 
+## Does it match reality?
+
+Scored against the **4–5 September 2022 Bengaluru flood**: given the reported 131.6 mm and the antecedent state of that night, the model puts **9 of the 10 reported flood locations** past 30 cm (POD **0.90**), and flags the tenth as Warning. It also over-predicts how far the flooding spreads, and **[docs/validation.md](docs/validation.md)** says so plainly, with the method, the sources, the sensitivity table and what the result does not establish. Reproduce it with `cd backend && ../.venv/bin/python -m validation.sept2022`.
+
 ## Data (all free and public)
 
 Copernicus GLO-30 DEM · ESA WorldCover 2021 · OpenStreetMap (lakes, drains) · BBMP ward boundaries and Census 2011 population (datameet) · Open-Meteo forecast, ensemble and archive · Esri World Dark Gray basemap. Details, licences and caveats: **[DATA_SOURCES.md](DATA_SOURCES.md)**.
