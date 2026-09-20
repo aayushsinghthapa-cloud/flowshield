@@ -8,12 +8,21 @@ from pydantic import BaseModel
 
 DEFAULT_MODEL = "gemini-3.5-flash"
 # Tried in order after the configured model when Gemini is overloaded or out of quota.
-FALLBACK_MODELS = ["gemini-3.6-flash", "gemini-flash-latest"]
+# The free tier allows 20 requests per day *per model*, so a wider chain is a wider
+# budget: these are all current Flash models on the same free key. Lite variants last,
+# because the bulletin has to write natural Kannada.
+FALLBACK_MODELS = [
+    "gemini-3.6-flash",
+    "gemini-3.7-flash",
+    "gemini-3.8-flash",
+    "gemini-flash-latest",
+    "gemini-3.5-flash-lite",
+    "gemini-flash-lite-latest",
+]
 # Worth waiting and trying the same model again: the capacity spike is usually brief.
+# Everything else (a spent free-tier quota, a retired model) will not fix itself in a
+# second, so we move straight on to the next model instead of burning the demo's time.
 RETRYABLE = ("503", "UNAVAILABLE", "overloaded")
-# Not worth waiting for: a free-tier quota does not refill in a second, so move on
-# to the next model immediately instead of burning the demo's time on backoff.
-MOVE_ON = ("429", "RESOURCE_EXHAUSTED", "404", "NOT_FOUND")
 
 
 class AIError(RuntimeError):
@@ -51,40 +60,43 @@ def generate_json(system: str, prompt: str, schema: type[BaseModel], temperature
             kw["thinking_config"] = types.ThinkingConfig(thinking_budget=0)
         return types.GenerateContentConfig(**kw)
 
-    thinking_off = True
-    config = make_config(thinking=False)
     t0 = time.perf_counter()
     models = [model_name()] + [m for m in FALLBACK_MODELS if m != model_name()]
     attempts: list[str] = []
     resp = None
     used = models[0]
     for used in models:
-        for backoff in (0.0, 1.5):
-            if backoff:
-                time.sleep(backoff)
+        # Each model gets: the fast attempt, one retry if it is merely overloaded, and
+        # one retry with thinking left on (the Lite models reject thinking_budget=0 with
+        # a bare 400). A model that fails all three is skipped, never fatal, so one odd
+        # model in the chain cannot take the whole call down with it.
+        thinking = False
+        wait = 0.0
+        for _ in range(3):
+            if wait:
+                time.sleep(wait)
             try:
-                resp = client.models.generate_content(model=used, contents=prompt, config=config)
+                resp = client.models.generate_content(
+                    model=used, contents=prompt, config=make_config(thinking))
                 break
             except Exception as e:  # network, quota, overload, bad request
                 msg = str(e)
                 attempts.append(f"{used}: {msg[:120]}")
-                if "thinking" in msg.lower() and thinking_off:
-                    thinking_off = False  # this model insists on thinking: ask again its way
-                    config = make_config(thinking=True)
-                    continue
-                if any(tok in msg for tok in MOVE_ON):
-                    break  # this model is out; try the next one straight away
-                if not any(tok in msg for tok in RETRYABLE):
-                    raise AIError(f"Gemini call failed: {msg[:300]}") from e
+                if not thinking and any(t in msg for t in ("thinking", "INVALID_ARGUMENT", "400")):
+                    thinking, wait = True, 0.0  # this model insists on thinking: ask its way
+                elif any(tok in msg for tok in RETRYABLE):
+                    wait = 1.5
+                else:
+                    break  # out of quota, gone, or refusing: move to the next model
         if resp is not None:
             break
     if resp is None:
         joined = " | ".join(attempts)
         if any(tok in joined for tok in ("429", "RESOURCE_EXHAUSTED")):
             raise AIError(
-                "Gemini's free-tier quota is exhausted for every model we can reach "
-                f"({', '.join(models)}). Wait a minute and press the button again — "
-                "nothing here is pre-written, so there is no cached answer to fall back on.")
+                f"Gemini's free-tier quota is used up on all {len(models)} models this key can "
+                "reach (20 requests per day each; it resets at 00:00 Pacific). Nothing here is "
+                "pre-written, so there is no cached answer to fall back on.")
         raise AIError("Gemini is unavailable right now (all retries failed): " + " | ".join(attempts[-2:]))
     parsed = resp.parsed
     if parsed is None:
