@@ -6,6 +6,7 @@ import {
 import AIScenarioBox from './components/AIScenarioBox'
 import BulletinPanel from './components/BulletinPanel'
 import CompareView, { type SavedRun } from './components/CompareView'
+import HelpSheet from './components/HelpSheet'
 import InsightsPanel from './components/InsightsPanel'
 import LivePanel from './components/LivePanel'
 import MapView, { type MapMode } from './components/MapView'
@@ -196,6 +197,7 @@ export default function App() {
             {running ? <span className="flex items-center gap-1.5 text-accent"><Spinner /> Simulating…</span>
               : result ? <span className="num">{result.cell_m} m grid · {result.runtime_s}s</span> : null}
           </div>
+          <div className="hidden md:block"><HelpSheet /></div>
           <button className="btn-quiet btn-sm lg:hidden" onClick={() => setSetupOpen(true)}>Setup</button>
         </div>
         {error && (

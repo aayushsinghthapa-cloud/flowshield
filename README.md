@@ -38,6 +38,16 @@ FlowShield makes this cascade visible and lets you test "what if this drain is b
 - Estimated affected population (Census 2011, dasymetric).
 - Interactive time slider.
 
+### Extras that make it usable
+- **Plain-English scenarios** (Gemini) with a confirm step.
+- **Live forecast run** on Open-Meteo rain, with soil wetness set from the past 24 h.
+- **Chance of flooding**: 31 GFS ensemble members simulated individually → per-ward probability.
+- **Sept 2022-style preset**: a reconstructed extreme event (labelled as reconstructed, not a hindcast).
+- **Fast preview / detailed** grid switch (200 m ≈ 8× faster; 100 m for final numbers).
+- **Share a link** that reproduces the exact scenario, and **download the ward table as CSV**.
+- **Ward search, hover tooltips, keyboard playback** (space, arrow keys), and a first-visit guide.
+- **Works on a phone**: the map, verdict and ward list reflow; controls move into a sheet.
+
 ### Beyond the brief
 - **Live forecast:** simulate the next 24 h of Open-Meteo rain, with soil wetness set from the past 24 h.
 - **Ensemble early warning:** 31 GFS members give a probability that each ward goes critical.
@@ -55,6 +65,11 @@ FlowShield uses **Google Gemini** (via the official `google-genai` Python SDK), 
 | **A2 · Early-warning bulletin** | Writes a severity level, an authority advisory and an SMS-style public alert in **English and Kannada** | Only a compact JSON of this run's results (critical wards, ETAs, people, lake levels, optional ensemble probabilities) | Prompt forbids new numbers; a **grounding check** verifies every number in the output against that JSON and shows ✓/⚠ |
 
 **No AI output is hardcoded, cached or faked.** If Gemini is unavailable, the UI shows the error and generates nothing. The API key stays server-side in `.env`.
+
+## Understand it in 5 minutes
+
+New to the project? Read **[docs/HOW-IT-WORKS.md](docs/HOW-IT-WORKS.md)** — the model and every part of the
+interface explained without jargon. The video plan is in [docs/demo-script.md](docs/demo-script.md).
 
 ## Mathematical model
 
