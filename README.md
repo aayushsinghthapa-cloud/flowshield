@@ -91,7 +91,22 @@ The mass-balance error is **≤ 3 × 10⁻¹³** on the real grid, and 12 automa
 
 ## Does it match reality?
 
-Scored against the **4–5 September 2022 Bengaluru flood**: given the reported 131.6 mm and the antecedent state of that night, the model puts **9 of the 10 reported flood locations** past 30 cm (POD **0.90**), and flags the tenth as Warning. It also over-predicts how far the flooding spreads, and **[docs/validation.md](docs/validation.md)** says so plainly, with the method, the sources, the sensitivity table and what the result does not establish. Reproduce it with `cd backend && ../.venv/bin/python -m validation.sept2022`.
+Scored against **two real Bengaluru floods**, with the rainfall each actually delivered:
+
+| Event | Rain | Character | POD |
+|---|---|---|---|
+| 4–5 Sep 2022 | 131.6 mm / 6 h | city-wide, lakes overflowed | **0.90** (9 of 10 reported locations) |
+| 20 Oct 2022 (held out) | 54.5 mm / 3 h | arterial roads and underpasses | **0.00** |
+
+The conclusion is a scope statement, not a score: **FlowShield is skilful at
+catchment-scale flooding and cannot resolve street-scale flooding**, because a 100 m cell
+averages a flooded road together with the buildings beside it. We also tried calibrating
+the one free parameter (drain capacity, 10→70 mm/hr) against both events; it changes the
+flooded extent by ~20%, fixes nothing, and the best-scoring value only flattered the
+training event — so we kept the honest assumption rather than adopt it.
+
+Method, sources, sensitivity and the full negative results: **[docs/validation.md](docs/validation.md)**.
+Reproduce: `python -m validation.sept2022` and `python -m validation.calibrate`.
 
 ## Data (all free and public)
 

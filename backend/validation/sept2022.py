@@ -75,18 +75,22 @@ def geocode(queries: list[str]) -> dict[str, tuple[float, float]]:
     return {q: tuple(v) for q, v in cache.items() if v}
 
 
-def observed_wards() -> tuple[dict[int, list[str]], list[str]]:
-    """ward id -> reported localities inside it, and the ones outside our domain."""
+def observed_wards_for(localities: list[tuple[str, str]]) -> tuple[dict[int, list[str]], list[str]]:
+    """ward id -> reported localities inside it, and the ones outside our domain.
+
+    Nothing is hand-assigned: each locality is geocoded and then placed by
+    point-in-polygon into whichever ward actually contains it.
+    """
     from shapely.geometry import Point, shape
 
     geo = json.loads((Path(__file__).parents[1] / "data" / "wards.geojson").read_text())
     polys = [(f["properties"]["id"], f["properties"]["name"], shape(f["geometry"]))
              for f in geo["features"]]
-    coords = geocode([q for _, q in OBSERVED])
+    coords = geocode([q for _, q in localities])
 
     hits: dict[int, list[str]] = {}
     outside: list[str] = []
-    for label, q in OBSERVED:
+    for label, q in localities:
         if q not in coords:
             outside.append(f"{label} (not geocoded)")
             continue
@@ -96,8 +100,12 @@ def observed_wards() -> tuple[dict[int, list[str]], list[str]]:
                 hits.setdefault(wid, []).append(label)
                 break
         else:
-            outside.append(label)
+            outside.append(f"{label} (outside the modelled area)")
     return hits, outside
+
+
+def observed_wards() -> tuple[dict[int, list[str]], list[str]]:
+    return observed_wards_for(OBSERVED)
 
 
 def run_event():

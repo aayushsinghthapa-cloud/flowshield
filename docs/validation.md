@@ -1,8 +1,10 @@
 # Validation against the 4–5 September 2022 Bengaluru flood
 
-**Headline: the model finds 9 of the 10 reported flood locations (POD 0.90), and the
-one it misses it still flags as Warning. It over-predicts how *far* the flooding
-spreads, so treat the affected-population figure as an upper bound, not a forecast.**
+**Headline: on the severe, city-wide flood of 4–5 September 2022 the model finds 9 of the
+10 reported flood locations (POD 0.90), and flags the tenth as Warning. On a moderate,
+street-scale event (20 October 2022) it finds none of them. The model is skilful at
+catchment-scale flooding and should not be trusted for street-scale flooding — and it
+over-predicts extent, so the affected-population figure is an upper bound.**
 
 Reproduce with (needs `shapely`, and network access on the first run for geocoding):
 
@@ -109,11 +111,71 @@ result: we did not pick the row with the best score, we picked the row the news 
 Note how strongly the **antecedent state** matters: the same 131.6 mm over 24 h onto
 60%-full tanks floods 26 wards instead of 41. That is the lake-cascade argument in one line.
 
+## Second event, held out: 20 October 2022 — and a negative result
+
+A single event cannot tell you whether a model generalises, so we scored a second,
+deliberately different one. On **20 October 2022** IMD recorded **54.5 mm over the city
+between 20:30 and 23:30** (HAL airport 71.2 mm) and the press reported flooding on the
+Outer Ring Road, in Koramangala, Indiranagar, Double Road, Seshadripuram and near
+K R Puram — a moderate, localised event rather than a city-wide one.
+
+**The model scores POD 0.00 on it.** It puts those five localities at peak depths of
+4.5–17.2 cm: wet, but below the 30 cm Critical line and mostly below 15 cm. It does flag
+three wards critical (Bharathi Nagar, Jayanagar East, Gurappanapalya) — genuine low points
+in the terrain — but not the reported ones.
+
+We are reporting this rather than dropping the event, because the reason is informative.
+
+## What the two events together actually say
+
+**The model's skill is scale-dependent.**
+
+| | 4–5 Sep 2022 | 20 Oct 2022 |
+|---|---|---|
+| Rain | 131.6 mm / 6 h | 54.5 mm / 3 h |
+| Character | city-wide, lakes overflowed | localised, arterial roads and underpasses |
+| Reported localities in domain | 10 wards | 5 wards |
+| **POD** | **0.90** | **0.00** |
+
+It works on **catchment-scale** flooding: enough rain that water accumulates in valley
+bottoms and the tank chain overtops. That is what the shallow-water model on a 100 m grid
+actually represents, and on that it is skilful.
+
+It fails on **street-scale** flooding: an underpass or an arterial road going under
+because one local drain is blocked. A 100 m cell averages a flooded road with the
+buildings either side, so the depth never reaches the threshold. Resolving that needs
+sub-10 m terrain and the real road-drainage network, neither of which is public.
+
+## Calibration: we tried, and it did not help
+
+Drain intake capacity is the model's one genuinely free parameter — BBMP publishes no
+capacities, so 20 mm/hr was an assumption. We swept it from 10 to 70 mm/hr, fitting on
+September and testing on October (`python -m validation.calibrate`):
+
+| Drain mm/hr | Sep: critical wards | Sep POD | Sep CSI | Oct POD |
+|---|---|---|---|---|
+| 10 | 53 / 72 | 1.00 | 0.19 | 0.00 |
+| 15 | 46 / 72 | 1.00 | 0.22 | 0.00 |
+| **20 (kept)** | **41 / 72** | **0.90** | **0.21** | **0.00** |
+| 30 | 42 / 72 | 0.90 | 0.21 | 0.00 |
+| 55 | 44 / 72 | 0.90 | 0.20 | 0.00 |
+| 70 | 43 / 72 | 0.90 | 0.20 | 0.00 |
+
+Two conclusions, both negative and both worth stating:
+
+1. **Drain capacity is not the lever we assumed.** A seven-fold change moves the flooded
+   extent by about 20%. The over-prediction is a *resolution* problem, not a parameter
+   problem, so no amount of tuning this number fixes it.
+2. **We did not adopt the best-scoring value.** 15 mm/hr gives POD 1.00 on September and
+   the best CSI — but it is better on the training event only, changes nothing on the
+   held-out event, and the differences are well inside the noise of 15 observations.
+   Choosing it would be fitting one number to one storm and calling it calibration. The
+   default stays at the honest assumption of **20 mm/hr**, and the UI keeps it as a slider.
+
 ## What this does not establish
 
 - No depth calibration. POD says *where*, never *how deep*.
-- One event. Two or three more would be needed before quoting a skill score with any
-  confidence.
+- Two events. More would be needed before quoting a skill score with confidence.
 - Ward boundaries are the BBMP 198-ward set; population is Census 2011.
 - Doddakanneli could not be geocoded and was excluded rather than hand-placed.
 - **This remains decision support, not an official forecast.**
@@ -126,4 +188,9 @@ Note how strongly the **antecedent state** matters: the same 131.6 mm over 24 h 
 - [Deccan Herald — Second wettest August on record for Bengaluru](https://www.deccanherald.com/amp/story/india%2Fkarnataka%2Fbengaluru%2Fsecond-wettest-august-on-record-for-bengaluru-1140843.html)
 - [The News Minute — Bengaluru flooded again after rains: Marathahalli, ORR under water](https://www.thenewsminute.com/article/bengaluru-flooded-again-after-rains-marathahalli-orr-under-water-167535)
 - [The Quint — Rains in Bengaluru continue to wreak havoc, Bellandur lake overflows into homes](https://www.thequint.com/south-india/rains-in-bengaluru-continue-to-wreak-havoc-three-lakes-overflow-into-homes)
+- [Deccan Herald — Bengaluru waterlogged again (20 Oct 2022)](https://www.deccanherald.com/amp/story/india%2Fkarnataka%2Fbengaluru%2Fbengaluru-waterlogged-again-1155146.html)
+- [Deccan Herald — Waterlogging in parts of Bengaluru after heavy rains](https://www.deccanherald.com/amp/city/life-in-bengaluru/waterlogging-in-parts-of-bengaluru-after-heavy-rains-1155240.html)
+- Rainfall for both events: reported IMD/KSNDMC gauge figures. Open-Meteo ERA5 archive was
+  checked and rejected as a driver: it gives 30.3 mm for 4–5 Sep 2022 against a reported
+  131.6 mm, a 4.3x underestimate.
 - Geocoding: OpenStreetMap Nominatim. Ward polygons: BBMP via datameet.

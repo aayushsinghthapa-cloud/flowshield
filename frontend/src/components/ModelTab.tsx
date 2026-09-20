@@ -234,10 +234,23 @@ export default function ModelTab({ result }: { result: SimResult | null }) {
         <p className="text-[11px] text-ink-3 mt-3 leading-snug max-w-3xl">
           <b>Read this honestly.</b> The model also flags 32 wards the press never named. Coverage reports the
           newsworthy, so that is an upper bound on false alarms rather than an error rate — but the model does
-          over-predict how far flooding spreads, because rain falls uniformly, drain capacity is a single assumed
-          number, and 100&nbsp;m cells cannot drain along a street. Trust the <b>ranking</b> of wards more than the
-          absolute headcount. Full method, sources and sensitivity table: <span className="num">docs/validation.md</span>.
+          over-predict how far flooding spreads. Trust the <b>ranking</b> of wards more than the absolute headcount.
         </p>
+        <div className="mt-3 rounded-[10px] border border-warn/30 bg-warn-soft/50 p-3">
+          <div className="text-[12px] font-semibold text-warn mb-1">Where it fails, on a second held-out event</div>
+          <p className="text-[11px] text-ink-2 leading-snug">
+            We scored a second, deliberately different flood: <b>20 Oct 2022</b>, 54.5&nbsp;mm in 3&nbsp;h, when the
+            press reported the ORR, Koramangala, Indiranagar, Double Road and Seshadripuram under water. The model
+            scores <b>POD 0.00</b> on it — it puts those places at 4–17&nbsp;cm, below the 30&nbsp;cm line.
+            The reason matters: that was <b>street-scale</b> flooding of roads and underpasses, and a 100&nbsp;m cell
+            averages a flooded road together with the buildings beside it. So FlowShield is skilful at
+            <b> catchment-scale</b> flooding — enough rain that valley bottoms fill and the tank chain overtops —
+            and should not be trusted to call a single flooded underpass. We also tried calibrating drain capacity
+            from 10 to 70&nbsp;mm/hr against both events: it moves the extent by ~20% and fixes nothing, so we kept
+            the honest assumption of 20&nbsp;mm/hr rather than adopt a value that only flattered the training event.
+            Full method and sources: <span className="num">docs/validation.md</span>.
+          </p>
+        </div>
       </Section>
 
       <div className="grid md:grid-cols-2 gap-3">
