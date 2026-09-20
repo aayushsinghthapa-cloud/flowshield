@@ -6,7 +6,7 @@ import {
 import { fmtEta, fmtPop, type SimResult, type WardResult } from '../api'
 import { download, wardCsv } from '../lib/exportCsv'
 import { copyLink } from '../lib/share'
-import { axisTick, Section, StatusChip, tooltipStyle } from '../ui'
+import { axisTick, hourAxis, Section, StatusChip, tooltipStyle } from '../ui'
 
 interface Props {
   result: SimResult
@@ -31,6 +31,8 @@ export default function InsightsPanel({ result: r, recordIdx, selectedWard, onSe
   const nowCrit = r.pop_critical[recordIdx] ?? 0
   const tNow = r.times_min[recordIdx]
   const severity = crit.length ? 2 : peakWarn > 0 ? 1 : 0
+
+  const maxH = (r.times_min[r.times_min.length - 1] ?? 0) / 60
 
   const series = useMemo(() => r.times_min.map((t, i) => ({
     t: +(t / 60).toFixed(2),
@@ -80,7 +82,7 @@ export default function InsightsPanel({ result: r, recordIdx, selectedWard, onSe
         <ResponsiveContainer width="100%" height={150}>
           <ComposedChart data={series} margin={{ left: -14, right: 4, top: 4, bottom: 0 }}>
             <CartesianGrid stroke="var(--color-line)" vertical={false} />
-            <XAxis dataKey="t" tick={axisTick} unit="h" tickLine={false} axisLine={false} />
+            <XAxis dataKey="t" tick={axisTick} tickLine={false} axisLine={false} {...hourAxis(maxH)} />
             <YAxis yAxisId="p" tick={axisTick} tickLine={false} axisLine={false} width={48} tickCount={4}
               allowDecimals={false} tickFormatter={(v) => (v >= 1000 ? `${Math.round(v / 1000)}k` : `${v}`)} />
             <YAxis yAxisId="r" orientation="right" tick={axisTick} tickLine={false} axisLine={false} width={28}
@@ -126,7 +128,7 @@ export default function InsightsPanel({ result: r, recordIdx, selectedWard, onSe
                       <LineChart data={r.times_min.map((t, i) => ({ t: +(t / 60).toFixed(2), d: w.metric[i] }))}
                         margin={{ left: -24, right: 4, top: 2, bottom: 0 }}>
                         <CartesianGrid stroke="var(--color-line)" vertical={false} />
-                        <XAxis dataKey="t" tick={axisTick} unit="h" tickLine={false} axisLine={false} />
+                        <XAxis dataKey="t" tick={axisTick} tickLine={false} axisLine={false} {...hourAxis(maxH)} />
                         <YAxis tick={axisTick} tickLine={false} axisLine={false} width={34}
                           tickFormatter={(v) => `${Math.round(v * 100)}`} />
                         <Tooltip contentStyle={tooltipStyle} formatter={(v) => `${Math.round(Number(v) * 100)} cm`}

@@ -103,3 +103,20 @@ export const tooltipStyle = {
 } as const
 
 export const axisTick = { fontSize: 11, fill: '#6e6e73' } as const
+
+/**
+ * Whole-hour ticks for a time axis, so labels read "0h 2h 4h" instead of the raw
+ * frame times ("0.33h 1.67h 3.33h").
+ */
+export function hourAxis(maxHours: number) {
+  const step = maxHours <= 6 ? 1 : maxHours <= 14 ? 2 : Math.ceil(maxHours / 8)
+  const ticks: number[] = []
+  for (let h = 0; h <= maxHours + 1e-9; h += step) ticks.push(Math.round(h))
+  return {
+    type: 'number' as const,
+    domain: [0, maxHours] as [number, number],
+    ticks,
+    tickFormatter: (v: number) => `${v}h`,
+    allowDecimals: false,
+  }
+}

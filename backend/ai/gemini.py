@@ -6,10 +6,14 @@ import time
 
 from pydantic import BaseModel
 
-DEFAULT_MODEL = "gemini-3.6-flash"
-# Tried in order after the configured model when Gemini is overloaded (503/429).
-FALLBACK_MODELS = ["gemini-3.5-flash", "gemini-flash-latest"]
-RETRYABLE = ("503", "UNAVAILABLE", "429", "RESOURCE_EXHAUSTED", "overloaded")
+DEFAULT_MODEL = "gemini-3.5-flash"
+# Tried in order after the configured model when Gemini is overloaded or out of quota.
+FALLBACK_MODELS = ["gemini-3.6-flash", "gemini-flash-latest"]
+# Worth waiting and trying the same model again: the capacity spike is usually brief.
+RETRYABLE = ("503", "UNAVAILABLE", "overloaded")
+# Not worth waiting for: a free-tier quota does not refill in a second, so move on
+# to the next model immediately instead of burning the demo's time on backoff.
+MOVE_ON = ("429", "RESOURCE_EXHAUSTED", "404", "NOT_FOUND")
 
 
 class AIError(RuntimeError):
@@ -32,13 +36,23 @@ def generate_json(system: str, prompt: str, schema: type[BaseModel], temperature
         raise AIError("google-genai is not installed") from e
 
     client = genai.Client(api_key=key)
-    config = types.GenerateContentConfig(
-        system_instruction=system,
-        response_mime_type="application/json",
-        response_schema=schema,
-        temperature=temperature,
-        automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
-    )
+
+    def make_config(thinking: bool):
+        kw = dict(
+            system_instruction=system,
+            response_mime_type="application/json",
+            response_schema=schema,
+            temperature=temperature,
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+        )
+        # Both of our prompts reformat facts we already computed; there is nothing to
+        # reason about, and turning thinking off takes the bulletin from ~12 s to ~4 s.
+        if not thinking:
+            kw["thinking_config"] = types.ThinkingConfig(thinking_budget=0)
+        return types.GenerateContentConfig(**kw)
+
+    thinking_off = True
+    config = make_config(thinking=False)
     t0 = time.perf_counter()
     models = [model_name()] + [m for m in FALLBACK_MODELS if m != model_name()]
     attempts: list[str] = []
@@ -46,18 +60,31 @@ def generate_json(system: str, prompt: str, schema: type[BaseModel], temperature
     used = models[0]
     for used in models:
         for backoff in (0.0, 1.5):
-            time.sleep(backoff)
+            if backoff:
+                time.sleep(backoff)
             try:
                 resp = client.models.generate_content(model=used, contents=prompt, config=config)
                 break
             except Exception as e:  # network, quota, overload, bad request
                 msg = str(e)
                 attempts.append(f"{used}: {msg[:120]}")
+                if "thinking" in msg.lower() and thinking_off:
+                    thinking_off = False  # this model insists on thinking: ask again its way
+                    config = make_config(thinking=True)
+                    continue
+                if any(tok in msg for tok in MOVE_ON):
+                    break  # this model is out; try the next one straight away
                 if not any(tok in msg for tok in RETRYABLE):
                     raise AIError(f"Gemini call failed: {msg[:300]}") from e
         if resp is not None:
             break
     if resp is None:
+        joined = " | ".join(attempts)
+        if any(tok in joined for tok in ("429", "RESOURCE_EXHAUSTED")):
+            raise AIError(
+                "Gemini's free-tier quota is exhausted for every model we can reach "
+                f"({', '.join(models)}). Wait a minute and press the button again — "
+                "nothing here is pre-written, so there is no cached answer to fall back on.")
         raise AIError("Gemini is unavailable right now (all retries failed): " + " | ".join(attempts[-2:]))
     parsed = resp.parsed
     if parsed is None:

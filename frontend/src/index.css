@@ -61,7 +61,7 @@ body {
     @apply inline-flex rounded-full bg-canvas p-0.5 border border-line;
   }
   .seg > button {
-    @apply rounded-full px-3 py-1 text-[12px] font-medium text-ink-2 transition-colors;
+    @apply rounded-full px-2 sm:px-3 py-1 text-[12px] font-medium text-ink-2 transition-colors;
   }
   .seg > button[data-on="true"] {
     @apply bg-surface text-ink shadow-[0_1px_2px_rgba(0,0,0,0.08)];

@@ -1,20 +1,29 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   DEFAULT_PARAMS, fetchCity, fetchForecast, runSimulation,
   type City, type EnsembleResult, type Forecast, type ParsedScenario, type ScenarioParams, type SimResult,
 } from './api'
 import AIScenarioBox from './components/AIScenarioBox'
 import BulletinPanel from './components/BulletinPanel'
-import CompareView, { type SavedRun } from './components/CompareView'
+import type { SavedRun } from './components/CompareView'
 import HelpSheet from './components/HelpSheet'
 import InsightsPanel from './components/InsightsPanel'
 import LivePanel from './components/LivePanel'
 import MapView, { type MapMode } from './components/MapView'
-import ModelTab from './components/ModelTab'
 import ScenarioPanel from './components/ScenarioPanel'
 import TimeSlider from './components/TimeSlider'
 import { paramsFromUrl, writeUrl } from './lib/share'
 import { Segmented, Spinner } from './ui'
+
+// Compare and Model carry Recharts' line charts and all of KaTeX. Keeping them out of
+// the first load gets the map and the first simulation on screen sooner; both are
+// prefetched as soon as the browser is idle, so switching tabs still feels instant.
+const CompareView = lazy(() => import('./components/CompareView'))
+const ModelTab = lazy(() => import('./components/ModelTab'))
+const prefetchTabs = () => {
+  import('./components/CompareView')
+  import('./components/ModelTab')
+}
 
 type Tab = 'simulator' | 'compare' | 'model'
 const TABS: { value: Tab; label: string }[] = [
@@ -74,6 +83,8 @@ export default function App() {
         run(params, 'Heavy storm')
       })
       .catch((e) => setError(`Could not load city data: ${e.message}`))
+    const idle = window.requestIdleCallback ?? ((f: () => void) => setTimeout(f, 2500))
+    idle(prefetchTabs)
   }, [run, params])
 
   const recordIdx = useMemo(() => {
@@ -183,15 +194,15 @@ export default function App() {
   return (
     <div className="h-full flex flex-col">
       <header className="shrink-0 bg-surface/80 backdrop-blur border-b border-line">
-        <div className="flex items-center gap-2 sm:gap-4 px-3 sm:px-4 h-14">
+        <div className="flex items-center gap-1.5 sm:gap-4 px-2.5 sm:px-4 h-14">
           <div className="flex items-center gap-2 shrink-0">
             <Logo />
             <div className="min-w-0">
-              <h1 className="text-[15px] font-semibold leading-tight whitespace-nowrap">FlowShield</h1>
+              <h1 className="text-[14px] sm:text-[15px] font-semibold leading-tight whitespace-nowrap">FlowShield</h1>
               <p className="hidden sm:block text-[11px] text-ink-2 leading-tight truncate">Bengaluru lake cascade</p>
             </div>
           </div>
-          <Segmented className="mx-auto" value={tab} onChange={setTab}
+          <Segmented className="mx-auto shrink-0" value={tab} onChange={setTab}
             options={TABS.map((t) => ({ ...t, label: t.value === 'compare' && saved.length ? `${t.label} ${saved.length}` : t.label }))} />
           <div className="hidden sm:flex items-center gap-2 text-[12px] text-ink-2">
             {running ? <span className="flex items-center gap-1.5 text-accent"><Spinner /> Simulating…</span>
@@ -233,7 +244,7 @@ export default function App() {
             </div>
             <Legend mode={mode} />
             {result && (
-              <div className="absolute bottom-8 lg:bottom-3 left-3 right-3 lg:left-1/2 lg:-translate-x-1/2 lg:w-[520px]">
+              <div className="absolute bottom-8 lg:bottom-7 left-3 right-3 lg:left-1/2 lg:-translate-x-1/2 lg:w-[520px]">
                 <TimeSlider times={result.frame_times_min} frame={frame} onFrame={setFrame}
                   playing={playing} onPlaying={setPlaying} rainNow={result.rain_mm_hr[recordIdx] ?? 0} />
               </div>
@@ -248,13 +259,14 @@ export default function App() {
         </div>
       )}
 
-      {tab === 'compare' && (
+      {(tab === 'compare' || tab === 'model') && (
         <div className="flex-1 min-h-0 overflow-y-auto">
-          <CompareView runs={saved} onRemove={(i) => setSaved((s) => s.filter((_, j) => j !== i))} />
+          <Suspense fallback={<div className="grid place-items-center p-10 text-[13px] text-ink-2"><Spinner /></div>}>
+            {tab === 'compare'
+              ? <CompareView runs={saved} onRemove={(i) => setSaved((s) => s.filter((_, j) => j !== i))} />
+              : <ModelTab result={result} />}
+          </Suspense>
         </div>
-      )}
-      {tab === 'model' && (
-        <div className="flex-1 min-h-0 overflow-y-auto"><ModelTab result={result} /></div>
       )}
 
       {setupOpen && (
@@ -295,7 +307,7 @@ function Legend({ mode }: { mode: MapMode }) {
       ? [['#bfdcff', '5 cm'], ['#61a5fa', '30 cm'], ['#1d4ed8', '1 m+']]
       : [['#d92d20', 'Critical ≥30 cm'], ['#c07a00', 'Warning ≥15 cm'], ['#1d9a6c', 'Safe']]
   return (
-    <div className="absolute top-14 right-3 lg:top-auto lg:bottom-10 card px-2 py-1.5 text-[10px] lg:text-[11px] space-y-0.5 lg:space-y-1">
+    <div className="absolute top-14 right-3 lg:top-auto lg:bottom-[104px] card px-2 py-1.5 text-[10px] lg:text-[11px] space-y-0.5 lg:space-y-1">
       {items.map(([c, l]) => (
         <div key={l} className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-[3px]" style={{ background: c }} /> {l}

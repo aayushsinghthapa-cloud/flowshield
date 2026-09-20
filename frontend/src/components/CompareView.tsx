@@ -1,6 +1,6 @@
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { fmtEta, fmtPop, type SimResult } from '../api'
-import { axisTick, Section, tooltipStyle } from '../ui'
+import { axisTick, hourAxis, Section, tooltipStyle } from '../ui'
 
 export interface SavedRun {
   name: string
@@ -33,6 +33,7 @@ export default function CompareView({ runs, onRemove }: { runs: SavedRun[]; onRe
   }
 
   const longest = runs.reduce((a, b) => (b.result.times_min.length > a.result.times_min.length ? b : a)).result
+  const maxH = (longest.times_min[longest.times_min.length - 1] ?? 0) / 60
   const series = (key: 'area_critical_km2' | 'pop_critical') =>
     longest.times_min.map((t, i) => {
       const row: Record<string, number> = { t: +(t / 60).toFixed(2) }
@@ -56,7 +57,7 @@ export default function CompareView({ runs, onRemove }: { runs: SavedRun[]; onRe
       <ResponsiveContainer width="100%" height={230}>
         <LineChart data={series(key)} margin={{ left: -8, right: 8, top: 4, bottom: 0 }}>
           <CartesianGrid stroke="var(--color-line)" vertical={false} />
-          <XAxis dataKey="t" unit="h" tick={axisTick} tickLine={false} axisLine={false} />
+          <XAxis dataKey="t" tick={axisTick} tickLine={false} axisLine={false} {...hourAxis(maxH)} />
           <YAxis tick={axisTick} tickLine={false} axisLine={false} tickFormatter={fmt} width={52}
             tickCount={4} allowDecimals={false} />
           <Tooltip contentStyle={tooltipStyle} formatter={(v) => fmt(Number(v))} labelFormatter={(l) => `${l} h after rain starts`} />

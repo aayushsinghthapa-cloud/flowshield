@@ -2,7 +2,7 @@ import katex from 'katex'
 import 'katex/dist/katex.min.css'
 import { Area, CartesianGrid, ComposedChart, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { SimResult } from '../api'
-import { axisTick, Section, tooltipStyle } from '../ui'
+import { axisTick, hourAxis, Section, tooltipStyle } from '../ui'
 
 function Eq({ tex }: { tex: string }) {
   return <div className="overflow-x-auto py-1.5"
@@ -90,6 +90,7 @@ const LIMITS = [
 
 export default function ModelTab({ result }: { result: SimResult | null }) {
   const mb = result?.mass_balance
+  const maxH = result ? (result.times_min[result.times_min.length - 1] ?? 0) / 60 : 0
   const data = result ? result.times_min.map((t, i) => ({
     t: +(t / 60).toFixed(2),
     rain: mb!.v_in_m3[i] / 1e6,
@@ -144,7 +145,7 @@ export default function ModelTab({ result }: { result: SimResult | null }) {
             <ResponsiveContainer width="100%" height={200}>
               <ComposedChart data={data} margin={{ left: -12, right: 8 }}>
                 <CartesianGrid stroke="var(--color-line)" vertical={false} />
-                <XAxis dataKey="t" unit="h" tick={axisTick} tickLine={false} axisLine={false} />
+                <XAxis dataKey="t" tick={axisTick} tickLine={false} axisLine={false} {...hourAxis(maxH)} />
                 <YAxis tick={axisTick} tickLine={false} axisLine={false} width={44} />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v) => Number(v).toFixed(3)} />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
@@ -160,7 +161,7 @@ export default function ModelTab({ result }: { result: SimResult | null }) {
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={data} margin={{ left: 0, right: 8 }}>
                 <CartesianGrid stroke="var(--color-line)" vertical={false} />
-                <XAxis dataKey="t" unit="h" tick={axisTick} tickLine={false} axisLine={false} />
+                <XAxis dataKey="t" tick={axisTick} tickLine={false} axisLine={false} {...hourAxis(maxH)} />
                 <YAxis yAxisId="e" scale="log" domain={[1e-17, 1e-6]} allowDataOverflow tick={axisTick}
                   tickLine={false} axisLine={false} width={52} tickFormatter={(v) => Number(v).toExponential(0)} />
                 <YAxis yAxisId="dt" orientation="right" tick={axisTick} tickLine={false} axisLine={false} width={30} unit="s" />
