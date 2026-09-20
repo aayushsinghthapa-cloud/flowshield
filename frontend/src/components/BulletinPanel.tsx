@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { aiBulletin, type BulletinResult, type EnsembleResult, type SimResult } from '../api'
-import { AIBadge } from './AIScenarioBox'
+import { AIBadge, Section, Spinner } from '../ui'
 
 const SEV: Record<string, string> = {
-  'ALL CLEAR': 'bg-emerald-500/20 text-emerald-200 border-emerald-500/50',
-  WATCH: 'bg-sky-500/20 text-sky-200 border-sky-500/50',
-  WARNING: 'bg-amber-500/20 text-amber-200 border-amber-500/50',
-  'SEVERE WARNING': 'bg-red-500/20 text-red-200 border-red-500/60',
+  'ALL CLEAR': 'bg-safe-soft text-safe',
+  WATCH: 'bg-accent-soft text-accent',
+  WARNING: 'bg-warn-soft text-warn',
+  'SEVERE WARNING': 'bg-crit-soft text-crit',
 }
 
 export default function BulletinPanel({ result, ensemble }: { result: SimResult; ensemble: EnsembleResult | null }) {
@@ -14,11 +14,9 @@ export default function BulletinPanel({ result, ensemble }: { result: SimResult;
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lang, setLang] = useState<'en' | 'kn'>('en')
+  const [copied, setCopied] = useState(false)
 
-  useEffect(() => {
-    setB(null)
-    setError(null)
-  }, [result.run_id])
+  useEffect(() => { setB(null); setError(null) }, [result.run_id])
 
   async function generate() {
     setLoading(true)
@@ -32,61 +30,61 @@ export default function BulletinPanel({ result, ensemble }: { result: SimResult;
     }
   }
 
+  const alert = b ? (lang === 'en' ? b.bulletin.public_alert_en : b.bulletin.public_alert_kn) : ''
+
   return (
-    <section className="rounded-lg border border-violet-500/40 bg-violet-950/20 p-3 space-y-2">
-      <div className="flex items-center justify-between">
-        <h3 className="panel-title !mb-0 !text-violet-300">✦ Early-warning bulletin</h3>
-        <button className="btn-ghost !border-violet-500/60" onClick={generate} disabled={loading}>
-          {loading ? 'Writing…' : b ? 'Regenerate' : 'Generate with AI'}
-        </button>
-      </div>
-      {error && <p className="text-xs text-red-300">AI unavailable, so no bulletin was generated: {error}</p>}
+    <Section title="Early-warning bulletin"
+      aside={<button className="btn-ghost btn-sm" onClick={generate} disabled={loading}>
+        {loading ? <><Spinner /> Writing…</> : b ? 'Regenerate' : 'Write with AI'}
+      </button>}>
+      {error && <p className="text-[12px] text-crit">AI unavailable, so nothing was written: {error}</p>}
       {!b && !error && !loading && (
-        <p className="text-[11px] text-slate-400">
-          Gemini writes an authority advisory and a public SMS alert (English + ಕನ್ನಡ) from this run's numbers only
-          {ensemble ? ', including the ensemble probabilities' : ''}.
+        <p className="text-[12px] text-ink-2">
+          Turns this run into an advisory for officials and a public alert in English and ಕನ್ನಡ, using only the numbers above.
         </p>
       )}
       {b && (
-        <div className="space-y-2 text-xs">
+        <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-1.5">
             <AIBadge model={b.ai.model} latency={b.ai.latency_s} />
-            <span className={`rounded px-1.5 py-0.5 text-[10px] ${b.grounding.ok ? 'bg-emerald-500/20 text-emerald-200' : 'bg-amber-500/20 text-amber-200'}`}
-              title="Every number in the bulletin is checked against the simulation output sent to the model.">
-              {b.grounding.ok
-                ? `✓ ${b.grounding.numbers_checked} numbers verified against simulation`
-                : `⚠ unverified numbers: ${b.grounding.unverified.join(', ')}`}
+            <span className={`chip ${b.grounding.ok ? 'bg-safe-soft text-safe' : 'bg-warn-soft text-warn'}`}
+              title="Every number in the text is checked against the simulation output.">
+              {b.grounding.ok ? `✓ ${b.grounding.numbers_checked} numbers verified` : `⚠ unverified: ${b.grounding.unverified.join(', ')}`}
             </span>
           </div>
-          <div className={`rounded border px-2 py-1.5 font-semibold ${SEV[b.bulletin.severity] ?? SEV.WATCH}`}>
-            {b.bulletin.severity}: {b.bulletin.headline}
+
+          <div className={`rounded-[10px] px-3 py-2 ${SEV[b.bulletin.severity] ?? SEV.WATCH}`}>
+            <div className="text-[11px] font-semibold uppercase tracking-wide">{b.bulletin.severity}</div>
+            <div className="text-[13px] font-medium leading-snug">{b.bulletin.headline}</div>
           </div>
+
           <div>
-            <div className="text-[11px] uppercase tracking-wide text-slate-400 mb-1">For authorities</div>
-            <ul className="list-disc pl-4 space-y-0.5 text-slate-200">
-              {b.bulletin.authority_advisory.map((a, i) => <li key={i}>{a}</li>)}
-            </ul>
-          </div>
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[11px] uppercase tracking-wide text-slate-400">Public alert</span>
-              {(['en', 'kn'] as const).map((l) => (
-                <button key={l} onClick={() => setLang(l)}
-                  className={`text-[11px] px-1.5 rounded ${lang === l ? 'bg-slate-700 text-white' : 'text-slate-400'}`}>
-                  {l === 'en' ? 'English' : 'ಕನ್ನಡ'}
-                </button>
+            <p className="eyebrow mb-1.5">What officials should do</p>
+            <ol className="space-y-1.5">
+              {b.bulletin.authority_advisory.map((a, i) => (
+                <li key={i} className="flex gap-2 text-[12px] leading-snug">
+                  <span className="num text-ink-3 shrink-0">{i + 1}</span>{a}
+                </li>
               ))}
-              <button className="ml-auto text-[11px] text-slate-400 hover:text-slate-100"
-                onClick={() => navigator.clipboard?.writeText(lang === 'en' ? b.bulletin.public_alert_en : b.bulletin.public_alert_kn)}>
-                Copy
-              </button>
+            </ol>
+          </div>
+
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <p className="eyebrow !mb-0">Public alert</p>
+              <div className="seg ml-auto">
+                {(['en', 'kn'] as const).map((l) => (
+                  <button key={l} data-on={lang === l} onClick={() => setLang(l)}>{l === 'en' ? 'English' : 'ಕನ್ನಡ'}</button>
+                ))}
+              </div>
+              <button className="btn-ghost btn-sm" onClick={async () => {
+                try { await navigator.clipboard.writeText(alert); setCopied(true); setTimeout(() => setCopied(false), 1500) } catch { /* ignore */ }
+              }}>{copied ? 'Copied' : 'Copy'}</button>
             </div>
-            <p className="rounded bg-slate-900 border border-slate-700 p-2 text-slate-100 leading-relaxed" lang={lang}>
-              {lang === 'en' ? b.bulletin.public_alert_en : b.bulletin.public_alert_kn}
-            </p>
+            <p className="rounded-[10px] bg-canvas p-3 text-[13px] leading-relaxed" lang={lang}>{alert}</p>
           </div>
         </div>
       )}
-    </section>
+    </Section>
   )
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
 import { fetchForecast, fmtEta, runEnsemble, type EnsembleResult, type Forecast, type ScenarioParams } from '../api'
-import { Slider } from './ScenarioPanel'
+import { Section, Slider, Spinner, tooltipStyle } from '../ui'
 
 interface Props {
   params: ScenarioParams
@@ -15,7 +15,7 @@ export default function LivePanel({ params, onRunLive, ensemble, onEnsemble, run
   const [fc, setFc] = useState<Forecast | null>(null)
   const [err, setErr] = useState<string | null>(null)
   const [factor, setFactor] = useState(1)
-  const [ensBusy, setEnsBusy] = useState(false)
+  const [busy, setBusy] = useState(false)
   const [ensErr, setEnsErr] = useState<string | null>(null)
 
   const load = () => {
@@ -25,7 +25,7 @@ export default function LivePanel({ params, onRunLive, ensemble, onEnsemble, run
   useEffect(load, [])
 
   async function ens() {
-    setEnsBusy(true)
+    setBusy(true)
     setEnsErr(null)
     try {
       onEnsemble(await runEnsemble({
@@ -37,79 +37,83 @@ export default function LivePanel({ params, onRunLive, ensemble, onEnsemble, run
     } catch (e) {
       setEnsErr((e as Error).message)
     } finally {
-      setEnsBusy(false)
+      setBusy(false)
     }
   }
 
   const next24 = fc ? fc.mm_hr.slice(0, 24) : []
+  const total = next24.reduce((a, b) => a + b, 0)
+  const risky = ensemble?.wards.filter((w) => w.p_critical > 0).sort((a, b) => b.p_critical - a.p_critical) ?? []
+
   return (
-    <section className="rounded-lg border border-sky-500/40 bg-sky-950/20 p-3 space-y-2">
-      <div className="flex items-center justify-between">
-        <h3 className="panel-title !mb-0 !text-sky-300">
-          <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse mr-1.5" />Live forecast
-        </h3>
-        <button className="text-[10px] text-slate-400 hover:text-slate-100" onClick={load}>refresh</button>
-      </div>
-      {err && <p className="text-xs text-red-300">Forecast unavailable: {err}</p>}
-      {!fc && !err && <p className="text-xs text-slate-400">Fetching Open-Meteo…</p>}
+    <Section title="Live forecast"
+      aside={<span className="flex items-center gap-1 text-[11px] text-ink-3">
+        <span className="w-1.5 h-1.5 rounded-full bg-crit animate-pulse" />Open-Meteo
+      </span>}>
+      {err && <p className="text-[12px] text-crit">Forecast unavailable: {err} <button className="underline" onClick={load}>retry</button></p>}
+      {!fc && !err && <p className="text-[12px] text-ink-2 flex items-center gap-1.5"><Spinner /> Fetching…</p>}
       {fc && (
         <>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div><div className="text-slate-400">Next 24 h</div>
-              <div className="font-semibold">{next24.reduce((a, b) => a + b, 0).toFixed(1)} mm</div></div>
-            <div><div className="text-slate-400">Past 24 h</div>
-              <div className="font-semibold">{fc.past_24h_mm} mm</div></div>
+          <div className="flex items-baseline gap-4">
+            <div>
+              <div className="text-[22px] font-semibold num leading-none">{total.toFixed(1)}<span className="text-[13px] font-normal text-ink-2"> mm</span></div>
+              <div className="text-[11px] text-ink-2">expected in 24 h</div>
+            </div>
+            <div>
+              <div className="text-[15px] font-medium num leading-none">{fc.past_24h_mm}<span className="text-[12px] font-normal text-ink-2"> mm</span></div>
+              <div className="text-[11px] text-ink-2">fell in past 24 h</div>
+            </div>
           </div>
-          <ResponsiveContainer width="100%" height={50}>
-            <BarChart data={next24.map((v, i) => ({ t: fc.times[i]?.slice(11, 16), v }))} margin={{ top: 2, bottom: 0, left: 0, right: 0 }}>
+          <ResponsiveContainer width="100%" height={44}>
+            <BarChart data={next24.map((v, i) => ({ t: fc.times[i]?.slice(11, 16), v }))} margin={{ top: 6, bottom: 0, left: 0, right: 0 }}>
               <XAxis dataKey="t" hide />
-              <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #334155', fontSize: 11 }}
-                formatter={(v) => `${v} mm/hr`} />
-              <Bar dataKey="v" fill="#38bdf8" />
+              <Tooltip contentStyle={tooltipStyle} formatter={(v) => `${v} mm/hr`} />
+              <Bar dataKey="v" fill="#2d7ff9" radius={[2, 2, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
-          <p className="text-[10px] text-slate-500">
-            {fc.source} · from {fc.times[0]?.replace('T', ' ')} IST · fetched {fc.fetched_at.slice(11, 16)}
-          </p>
           <Slider label="Thunderstorm peak factor" value={factor} min={1} max={4} step={0.25}
-            fmt={(v) => `×${v}`} onChange={setFactor}
-            hint="Forecast models average rain over 9–25 km cells, which flattens local cloudbursts. Scale peaks to stress-test." />
-          <div className="grid grid-cols-2 gap-2">
-            <button className="btn-ghost !border-sky-500/60" disabled={running} onClick={() => onRunLive(fc, factor, 24)}>
-              Simulate next 24 h
-            </button>
-            <button className="btn-ghost !border-sky-500/60" disabled={ensBusy} onClick={ens}>
-              {ensBusy ? 'Running 31 members…' : 'Ensemble risk'}
+            fmt={(v) => `x${v}`} onChange={setFactor}
+            hint="Forecasts average rain over 9-25 km, which flattens local cloudbursts." />
+          <div className="grid grid-cols-2 gap-2 mt-1">
+            <button className="btn-quiet" disabled={running} onClick={() => onRunLive(fc, factor, 24)}>Simulate 24 h</button>
+            <button className="btn-quiet" disabled={busy} onClick={ens}>
+              {busy ? <><Spinner /> 31 runs…</> : 'Chance of flooding'}
             </button>
           </div>
+          <p className="text-[10px] text-ink-3 mt-1.5">
+            {fc.source} · from {fc.times[0]?.replace('T', ' ')} IST
+          </p>
         </>
       )}
-      {ensErr && <p className="text-xs text-red-300">Ensemble failed: {ensErr}</p>}
+
+      {ensErr && <p className="text-[12px] text-crit mt-2">Could not run the ensemble: {ensErr}</p>}
       {ensemble && (
-        <div className="text-xs space-y-1">
-          <div className="flex justify-between text-slate-300">
-            <span>P(ward critical in 24 h) · {ensemble.n_members} members ×{ensemble.peak_factor}</span>
-            <button className="text-slate-400 hover:text-slate-100" onClick={() => onEnsemble(null)}>✕</button>
+        <div className="mt-3 pt-3 divider">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[12px] font-medium">Chance of flooding · next 24 h</span>
+            <button className="text-ink-3 hover:text-ink" onClick={() => onEnsemble(null)} aria-label="Clear">✕</button>
           </div>
-          {ensemble.wards.filter((w) => w.p_critical > 0).length === 0 ? (
-            <p className="text-emerald-300">No member takes any ward to Critical. Low flood risk in the next 24 h.</p>
+          {risky.length === 0 ? (
+            <p className="text-[12px] text-safe">None of the {ensemble.n_members} forecasts floods any ward. Low risk.</p>
           ) : (
-            <ul className="space-y-0.5 max-h-40 overflow-y-auto">
-              {[...ensemble.wards].filter((w) => w.p_critical > 0).sort((a, b) => b.p_critical - a.p_critical).map((w) => (
+            <ul className="space-y-1 max-h-40 overflow-y-auto">
+              {risky.map((w) => (
                 <li key={w.id} className="flex items-center gap-2">
-                  <span className="w-28 truncate text-slate-200">{w.name}</span>
-                  <span className="flex-1 h-2 rounded bg-slate-800 overflow-hidden">
-                    <span className="block h-full bg-red-500" style={{ width: `${w.p_critical * 100}%` }} />
+                  <span className="w-20 truncate text-[12px]">{w.name}</span>
+                  <span className="flex-1 h-1.5 rounded-full bg-canvas overflow-hidden">
+                    <span className="block h-full rounded-full bg-crit" style={{ width: `${w.p_critical * 100}%` }} />
                   </span>
-                  <span className="w-9 text-right font-mono">{Math.round(w.p_critical * 100)}%</span>
-                  <span className="w-14 text-right font-mono text-slate-400" title="median ETA among members">{fmtEta(w.eta_median_min)}</span>
+                  <span className="num text-[11px] w-8 text-right">{Math.round(w.p_critical * 100)}%</span>
+                  <span className="num text-[11px] w-12 text-right text-ink-3">{fmtEta(w.eta_median_min)}</span>
                 </li>
               ))}
             </ul>
           )}
-          <p className="text-[10px] text-slate-500">{ensemble.source} · 200 m grid · member totals {Math.min(...ensemble.member_totals_mm).toFixed(0)}–{Math.max(...ensemble.member_totals_mm).toFixed(0)} mm</p>
+          <p className="text-[10px] text-ink-3 mt-1.5">
+            {ensemble.n_members} forecast members, each simulated · totals {Math.min(...ensemble.member_totals_mm).toFixed(0)}–{Math.max(...ensemble.member_totals_mm).toFixed(0)} mm
+          </p>
         </div>
       )}
-    </section>
+    </Section>
   )
 }

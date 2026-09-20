@@ -28,20 +28,20 @@ const STYLE: maplibregl.StyleSpecification = {
   sources: {
     base: {
       type: 'raster',
-      tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'],
+      tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'],
       tileSize: 256,
       maxzoom: 16,
       attribution: 'Basemap © Esri, HERE, Garmin, © OpenStreetMap contributors',
     },
     labels: {
       type: 'raster',
-      tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}'],
+      tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}'],
       tileSize: 256,
       maxzoom: 16,
     },
   },
   layers: [
-    { id: 'bg', type: 'background', paint: { 'background-color': '#0b1220' } },
+    { id: 'bg', type: 'background', paint: { 'background-color': '#eef0f2' } },
     { id: 'base', type: 'raster', source: 'base', paint: { 'raster-opacity': 0.9 } },
   ],
 }
@@ -51,11 +51,11 @@ const CHANNEL = 2
 // Blue ramp for depth (m) -> rgba
 function depthColor(d: number): [number, number, number, number] {
   if (d < 0.02) return [0, 0, 0, 0]
-  const t = Math.min(d / 1.0, 1)
-  const r = Math.round(120 * (1 - t))
-  const g = Math.round(200 - 110 * t)
-  const b = 255
-  const a = Math.round(90 + 150 * Math.min(d / 0.3, 1))
+  const t = Math.min(d / 1.0, 1)                 // 0 shallow -> 1 deep
+  const r = Math.round(191 - 162 * t)            // #bfdcff -> #1d4ed8
+  const g = Math.round(220 - 142 * t)
+  const b = Math.round(255 - 39 * t)
+  const a = Math.round(110 + 135 * Math.min(d / 0.3, 1))
   return [r, g, b, a]
 }
 
@@ -82,6 +82,7 @@ export default function MapView(p: Props) {
       ],
       fitBoundsOptions: { padding: 20 },
       attributionControl: { compact: true },
+      dragRotate: false,
     })
     map.current = m
     if (import.meta.env.DEV) (window as unknown as { __map: maplibregl.Map }).__map = m
@@ -108,17 +109,17 @@ export default function MapView(p: Props) {
           'fill-color': [
             'match',
             ['coalesce', ['feature-state', 'status'], -1],
-            2, '#ef4444',
-            1, '#f59e0b',
-            0, '#10b981',
-            '#64748b',
+            2, '#d92d20',
+            1, '#c07a00',
+            0, '#1d9a6c',
+            '#c7c7cc',
           ],
           'fill-opacity': [
             'case',
-            ['boolean', ['feature-state', 'selected'], false], 0.45,
-            ['==', ['coalesce', ['feature-state', 'status'], -1], 2], 0.28,
-            ['==', ['coalesce', ['feature-state', 'status'], -1], 1], 0.2,
-            0.06,
+            ['boolean', ['feature-state', 'selected'], false], 0.38,
+            ['==', ['coalesce', ['feature-state', 'status'], -1], 2], 0.34,
+            ['==', ['coalesce', ['feature-state', 'status'], -1], 1], 0.22,
+            0.04,
           ],
         },
       })
@@ -132,16 +133,16 @@ export default function MapView(p: Props) {
         id: 'lakes',
         type: 'fill',
         source: 'lakes',
-        paint: { 'fill-color': '#1d4ed8', 'fill-opacity': 0.55, 'fill-outline-color': '#60a5fa' },
+        paint: { 'fill-color': '#2d7ff9', 'fill-opacity': 0.4, 'fill-outline-color': '#1d4ed8' },
       })
       m.addLayer({
         id: 'drains',
         type: 'line',
         source: 'drains',
         paint: {
-          'line-color': ['case', ['boolean', ['feature-state', 'blocked'], false], '#f43f5e', '#38bdf8'],
-          'line-width': ['case', ['boolean', ['feature-state', 'blocked'], false], 4, 1.2],
-          'line-opacity': 0.8,
+          'line-color': ['case', ['boolean', ['feature-state', 'blocked'], false], '#d92d20', '#2d7ff9'],
+          'line-width': ['case', ['boolean', ['feature-state', 'blocked'], false], 4, 1],
+          'line-opacity': ['case', ['boolean', ['feature-state', 'blocked'], false], 1, 0.55],
         },
       })
       m.addLayer({
@@ -149,9 +150,9 @@ export default function MapView(p: Props) {
         type: 'line',
         source: 'wards',
         paint: {
-          'line-color': ['case', ['boolean', ['feature-state', 'selected'], false], '#f8fafc', '#94a3b8'],
-          'line-width': ['case', ['boolean', ['feature-state', 'selected'], false], 2.5, 0.6],
-          'line-opacity': 0.7,
+          'line-color': ['case', ['boolean', ['feature-state', 'selected'], false], '#1d1d1f', '#8e8e93'],
+          'line-width': ['case', ['boolean', ['feature-state', 'selected'], false], 2, 0.5],
+          'line-opacity': 0.65,
         },
       })
       m.addLayer({
@@ -160,10 +161,10 @@ export default function MapView(p: Props) {
         source: 'wards',
         minzoom: 12,
         layout: { 'text-field': ['get', 'name'], 'text-size': 11, 'text-font': ['Noto Sans Regular'] },
-        paint: { 'text-color': '#e2e8f0', 'text-halo-color': '#0f172a', 'text-halo-width': 1.2 },
+        paint: { 'text-color': '#3a3a3c', 'text-halo-color': '#ffffff', 'text-halo-width': 1.4 },
       })
 
-      m.addLayer({ id: 'ref-labels', type: 'raster', source: 'labels', paint: { 'raster-opacity': 0.8 } })
+      m.addLayer({ id: 'ref-labels', type: 'raster', source: 'labels', paint: { 'raster-opacity': 0.85 } })
 
       const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false })
       m.on('mousemove', 'drains', (e: MapLayerMouseEvent) => {
@@ -177,6 +178,27 @@ export default function MapView(p: Props) {
             .setHTML(`<b>${pr.name || 'Unnamed ' + pr.kind}</b><br/>${pr.length_m} m · click to block/unblock`)
             .addTo(m)
         }
+      })
+      const wardPopup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 8 })
+      m.on('mousemove', 'ward-fill', (e: MapLayerMouseEvent) => {
+        const h = handlers.current
+        if (h.blockMode) return
+        const f = e.features?.[0]
+        if (!f) return
+        m.getCanvas().style.cursor = 'pointer'
+        const id = Number(f.properties.id)
+        const w = h.result?.wards.find((x) => x.id === id)
+        const st = h.probability ? null : h.wardStatus.get(id) ?? 0
+        const label = h.probability
+          ? `${Math.round((h.probability.get(id) ?? 0) * 100)}% chance of flooding`
+          : `${['Safe', 'Warning', 'Critical'][st ?? 0]}${w?.eta_min != null ? ` · floods at ${Math.round(w.eta_min)} min` : ''}`
+        wardPopup.setLngLat(e.lngLat)
+          .setHTML(`<b>${f.properties.name}</b><br/>${w ? label : 'run a simulation'}`)
+          .addTo(m)
+      })
+      m.on('mouseleave', 'ward-fill', () => {
+        m.getCanvas().style.cursor = ''
+        wardPopup.remove()
       })
       m.on('mouseleave', 'drains', () => {
         m.getCanvas().style.cursor = ''
@@ -220,7 +242,7 @@ export default function MapView(p: Props) {
     }
     const img = ctx.createImageData(cols, rows)
     const data = img.data
-    if (result && result.frames[frame]) {
+    if (result && result.frames[frame] && mode !== 'probability') {
       const f = result.frames[frame]
       const { warning_m, critical_m } = result.params.thresholds
       for (let i = 0; i < f.length; i++) {
@@ -229,8 +251,8 @@ export default function MapView(p: Props) {
         const d = f[i] / 1000
         let c: [number, number, number, number]
         if (mode === 'status' && k !== CHANNEL) {
-          if (d >= critical_m) c = [239, 68, 68, 230]
-          else if (d >= warning_m) c = [245, 158, 11, 200]
+          if (d >= critical_m) c = [217, 45, 32, 225]
+          else if (d >= warning_m) c = [240, 165, 20, 195]
           else c = depthColor(d)
         } else c = depthColor(d)
         const o = i * 4

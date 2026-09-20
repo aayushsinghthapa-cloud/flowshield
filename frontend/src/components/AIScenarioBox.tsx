@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { aiParseScenario, type ParsedScenario } from '../api'
+import { AIBadge, Section, Spinner } from '../ui'
 
 interface Props {
   onConfirm: (p: ParsedScenario) => void
@@ -7,18 +8,10 @@ interface Props {
 }
 
 const EXAMPLES = [
-  '130 mm in 3 hours peaking in hour 2, lakes already full after a week of rain, 40% of drains failed',
-  'Cloudburst over Koramangala with the drain near Bellanduru blocked',
-  "Run today's live forecast but assume thunderstorms double the peaks",
+  '130 mm in 3 hours, lakes already full, 40% of drains blocked',
+  'Cloudburst with the drain near Ejipura blocked',
+  "Today's forecast, but assume thunderstorms double the peaks",
 ]
-
-export function AIBadge({ model, latency }: { model: string; latency?: number }) {
-  return (
-    <span className="inline-flex items-center gap-1 rounded bg-violet-500/20 px-1.5 py-0.5 text-[10px] font-medium text-violet-200">
-      ✦ AI-generated · {model}{latency !== undefined ? ` · ${latency}s` : ''}
-    </span>
-  )
-}
 
 export default function AIScenarioBox({ onConfirm, busy }: Props) {
   const [text, setText] = useState('')
@@ -41,62 +34,48 @@ export default function AIScenarioBox({ onConfirm, busy }: Props) {
 
   const p = parsed?.parsed
   return (
-    <section className="rounded-lg border border-violet-500/40 bg-violet-950/20 p-3">
-      <h3 className="panel-title !text-violet-300">✦ Describe a scenario (AI)</h3>
-      <textarea
-        className="w-full h-20 rounded bg-slate-900 border border-slate-700 p-2 text-xs text-slate-100 placeholder:text-slate-500"
-        placeholder="e.g. 3-hour storm, 40% drainage failure, drain near HSR Layout blocked…"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-      />
-      <div className="flex flex-wrap gap-1 mb-2">
+    <Section title="Ask in plain English">
+      <textarea className="input h-16 resize-none" placeholder="e.g. heavy storm, half the drains blocked, lakes already full"
+        value={text} onChange={(e) => setText(e.target.value)} />
+      <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
         {EXAMPLES.map((ex) => (
-          <button key={ex} className="text-[10px] text-violet-300 hover:text-violet-100 underline decoration-dotted text-left"
-            onClick={() => setText(ex)}>
-            {ex.length > 48 ? ex.slice(0, 48) + '…' : ex}
+          <button key={ex} className="text-[11px] text-accent hover:underline text-left" onClick={() => setText(ex)}>
+            {ex.length > 40 ? `${ex.slice(0, 40)}…` : ex}
           </button>
         ))}
       </div>
-      <button className="btn-ghost w-full !border-violet-500/60" disabled={loading || text.trim().length < 3} onClick={parse}>
-        {loading ? 'Asking Gemini…' : 'Parse with AI'}
+      <button className="btn-quiet w-full mt-2" disabled={loading || text.trim().length < 3} onClick={parse}>
+        {loading ? <><Spinner /> Reading your scenario…</> : 'Turn into a simulation'}
       </button>
-      {error && <p className="mt-2 text-xs text-red-300">AI unavailable: {error}</p>}
+
+      {error && <p className="mt-2 text-[12px] text-crit">AI unavailable: {error}</p>}
+
       {p && parsed && (
-        <div className="mt-3 space-y-2 text-xs">
+        <div className="mt-3 rounded-[10px] border border-line p-2.5">
           <AIBadge model={parsed.ai.model} latency={parsed.ai.latency_s} />
-          <p className="text-slate-200 italic">“{p.summary}”</p>
-          <table className="w-full text-[11px]">
-            <tbody className="[&_td]:py-0.5">
-              {p.profile === 'live_forecast' ? (
-                <tr><td className="text-slate-400">Rain</td><td>Live forecast × {p.forecast_peak_factor}</td></tr>
-              ) : (
-                <>
-                  <tr><td className="text-slate-400">Rain</td><td>{p.profile}, peak {p.peak_mm_hr} mm/hr for {p.duration_hr} h</td></tr>
-                  {p.profile === 'triangular' && <tr><td className="text-slate-400">Peak at</td><td>{p.peak_at_hr} h</td></tr>}
-                </>
-              )}
-              <tr><td className="text-slate-400">Drain failure</td><td>{Math.round(p.drainage_failure * 100)}%</td></tr>
-              <tr><td className="text-slate-400">Lake level</td><td>{Math.round(p.lake_fill * 100)}%</td></tr>
-              <tr><td className="text-slate-400">Ground wetness</td><td>{Math.round(p.antecedent_wetness * 100)}%</td></tr>
-              <tr><td className="text-slate-400">Blocked</td><td>
-                {parsed.blocked_places.length
-                  ? parsed.blocked_places.map((b) => `${b.place} (${b.drains} drains)`).join(', ')
-                  : 'none'}
-              </td></tr>
-            </tbody>
-          </table>
+          <p className="text-[12px] italic text-ink-2 mt-1.5">“{p.summary}”</p>
+          <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[12px]">
+            <dt className="text-ink-2">Rain</dt>
+            <dd className="num">{p.profile === 'live_forecast' ? `live forecast x${p.forecast_peak_factor}`
+              : `${p.peak_mm_hr} mm/hr peak, ${p.duration_hr} h`}</dd>
+            <dt className="text-ink-2">Drains lost</dt><dd className="num">{Math.round(p.drainage_failure * 100)}%</dd>
+            <dt className="text-ink-2">Lakes full</dt><dd className="num">{Math.round(p.lake_fill * 100)}%</dd>
+            <dt className="text-ink-2">Ground wet</dt><dd className="num">{Math.round(p.antecedent_wetness * 100)}%</dd>
+            <dt className="text-ink-2">Blocked</dt>
+            <dd>{parsed.blocked_places.length ? parsed.blocked_places.map((b) => `${b.place} (${b.drains})`).join(', ') : 'none'}</dd>
+          </dl>
           {parsed.unknown_places.length > 0 && (
-            <p className="text-amber-300">Not on our map, ignored: {parsed.unknown_places.join(', ')}</p>
+            <p className="text-[11px] text-warn mt-1.5">Not on our map, ignored: {parsed.unknown_places.join(', ')}</p>
           )}
-          {parsed.clamped.length > 0 && <p className="text-amber-300">Clamped to model range: {parsed.clamped.join('; ')}</p>}
-          <div className="flex gap-2">
-            <button className="btn-primary flex-1 !py-1.5" disabled={busy} onClick={() => onConfirm(parsed)}>
-              Confirm & run
-            </button>
-            <button className="btn-ghost" onClick={() => setParsed(null)}>Discard</button>
+          {parsed.clamped.length > 0 && (
+            <p className="text-[11px] text-warn mt-1">Adjusted to model limits: {parsed.clamped.join('; ')}</p>
+          )}
+          <div className="flex gap-2 mt-2.5">
+            <button className="btn-primary flex-1" disabled={busy} onClick={() => onConfirm(parsed)}>Run this</button>
+            <button className="btn-quiet" onClick={() => setParsed(null)}>Discard</button>
           </div>
         </div>
       )}
-    </section>
+    </Section>
   )
 }

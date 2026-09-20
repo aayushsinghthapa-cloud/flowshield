@@ -2,186 +2,206 @@ import katex from 'katex'
 import 'katex/dist/katex.min.css'
 import { Area, CartesianGrid, ComposedChart, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { SimResult } from '../api'
+import { axisTick, Section, tooltipStyle } from '../ui'
 
 function Eq({ tex }: { tex: string }) {
-  return <div className="overflow-x-auto py-1" dangerouslySetInnerHTML={{ __html: katex.renderToString(tex, { displayMode: true, throwOnError: false }) }} />
+  return <div className="overflow-x-auto py-1.5"
+    dangerouslySetInnerHTML={{ __html: katex.renderToString(tex, { displayMode: true, throwOnError: false }) }} />
 }
 
-function M({ tex }: { tex: string }) {
-  return <span dangerouslySetInnerHTML={{ __html: katex.renderToString(tex, { throwOnError: false }) }} />
-}
+const PLAIN = [
+  ['Cut the city into squares', 'Each square is 100 m across and knows its height above sea level, how built-up it is, and how many people live there.'],
+  ['Add the rain', 'Concrete sheds almost all of it; parks and trees soak most of it up.'],
+  ['Let water flow downhill', 'Every few seconds water moves between neighbouring squares, faster on smooth roads and slower through trees.'],
+  ['Drains and lakes', 'Street drains carry water to the nearest storm drain or lake. Lakes fill up and, once full, spill into the next lake downstream.'],
+  ['Read the depth', '15 cm is hard to walk through, 30 cm floats a car. We report when each ward crosses those marks, and how many people are there.'],
+]
 
 const STEPS: { title: string; tex: string; note: string }[] = [
   {
-    title: '1 · Effective rainfall (rational method)',
+    title: '1 · Rain that actually runs off',
     tex: String.raw`h_i \leftarrow h_i + C_i\,R(t)\,\Delta t, \qquad C_i = 1-(1-\textstyle\sum_k f_{ik} C_k)(1-w)`,
-    note: 'C from ESA WorldCover fractions f (built 0.90, bare 0.60, crop/grass 0.35, trees 0.20); w = antecedent wetness.',
+    note: 'C is the runoff coefficient from ESA WorldCover land-cover shares f (built 0.90, bare 0.60, crop/grass 0.35, trees 0.20); w is how wet the ground already is.',
   },
   {
-    title: '2 · Storm-drain transfer and infiltration',
+    title: '2 · Storm drains and soaking in',
     tex: String.raw`d_i = \min\!\big(h_i,\; D(1-\phi)\,\Delta t\big),\quad h_i \mathrel{-}= d_i,\quad h_{r(i)} \mathrel{+}= d_i;\qquad \iota_i=\min(h_i, K p_i \Delta t)`,
-    note: 'Water leaves street cells into the nearest mapped drain/lake r(i) (a transfer, not a loss); φ = drainage failure; ι = ponded infiltration on pervious fraction p.',
+    note: 'Water leaves a street cell into its nearest mapped drain or lake r(i) — a transfer inside the model, not a loss. φ is the share of drain capacity lost; ι is infiltration on the pervious share p.',
   },
   {
-    title: '3 · Local-inertial momentum (Bates et al., 2010)',
+    title: '3 · How fast water moves (Bates et al., 2010)',
     tex: String.raw`q^{n+1}_{i+\frac12} = \frac{q^n_{i+\frac12} - g\,h_f\,\Delta t\,\dfrac{\eta_{i+1}-\eta_i}{\Delta x}}{1 + g\,\Delta t\,n^2\,|q^n_{i+\frac12}|\,/\,h_f^{7/3}},\qquad h_f=\max(\eta_i,\eta_{i+1})-\max(z_i,z_{i+1})`,
-    note: 'Shallow-water equations without advection; η = z + h is the water surface, n is Manning roughness from land cover. |q| is capped at Froude 1.',
+    note: 'The local-inertial shallow-water equations: gravity pulls water toward the lower water surface η = z + h, and Manning roughness n slows it down.',
   },
   {
-    title: '4 · Continuity (exactly conservative flux form)',
+    title: '4 · Nothing is created or lost',
     tex: String.raw`h_i^{n+1} = h_i^n + \frac{\Delta t}{\Delta x}\Big(q_{i-\frac12}-q_{i+\frac12}+q_{j-\frac12}-q_{j+\frac12}\Big)`,
-    note: 'A positivity limiter scales each cell’s outgoing fluxes so it never gives more than it holds, so h ≥ 0 and volume is conserved.',
+    note: 'Whatever leaves one square enters its neighbour. A limiter stops a square from giving away more water than it holds, so depth can never go negative.',
   },
   {
-    title: '5 · Stability (CFL) and open boundary',
-    tex: String.raw`\Delta t = \alpha\,\frac{\Delta x}{\sqrt{g\,h_{\max}}},\ \alpha = 0.7;\qquad q_b = \frac{h^{5/3} S_0^{1/2}}{n}\ \text{(normal-depth outflow at edges)}`,
-    note: 'Lakes on the boundary are closed; tanks spill over their weir first.',
+    title: '5 · Choosing the time step',
+    tex: String.raw`\Delta t = \alpha\,\frac{\Delta x}{\sqrt{g\,h_{\max}}},\ \alpha = 0.7;\qquad q_b = \frac{h^{5/3} S_0^{1/2}}{n}`,
+    note: 'The CFL condition: deeper water means faster waves, so the step shrinks automatically. At the edge of the map, water leaves at normal depth.',
   },
   {
-    title: '6 · Mass balance (checked every run)',
+    title: '6 · The honesty check',
     tex: String.raw`\varepsilon = \frac{\big|\,V(t) - V_0 - V_{\text{rain}} - V_{\text{inflow}} + V_{\text{out}} + V_{\text{inf}}\,\big|}{V_{\text{rain}}}`,
-    note: 'Float64 arithmetic; typical ε ≈ 10⁻¹⁴ on the real grid.',
+    note: 'Rain in must equal water stored, water that left the map, and water that soaked in. We compute this every run; it stays near 10⁻¹⁴.',
   },
   {
-    title: '7 · Risk classification and early warning',
-    tex: String.raw`\text{status}_i=\begin{cases}\text{Critical} & h_i \ge 0.30\text{ m}\\ \text{Warning} & h_i \ge 0.15\text{ m}\\ \text{Safe}\end{cases}\qquad H_w(t)=P_{95}\{h_i(t): i\in w,\ \text{land}\},\quad \text{ETA}_w=\min\{t: H_w(t)\ge 0.30\}`,
-    note: 'Thresholds follow US NWS guidance (15 cm moving water knocks adults over; 30 cm floats cars). A ward is Critical when ≥5% of its land area is ≥30 cm. ETA is linearly interpolated between 5-min records.',
+    title: '7 · Turning depth into a warning',
+    tex: String.raw`H_w(t)=P_{95}\{h_i(t): i\in w\},\qquad \text{ETA}_w=\min\{t: H_w(t)\ge 0.30\,\text{m}\}`,
+    note: 'A ward counts as Critical when 5% of its land is at least 30 cm deep. ETA is the first time that happens, interpolated between 5-minute snapshots.',
   },
   {
-    title: '8 · Probabilistic forecast',
+    title: '8 · Chance of flooding',
     tex: String.raw`P(\text{ward } w \text{ critical}) = \frac{1}{N}\sum_{m=1}^{N} \mathbf{1}\big[\text{ETA}_w^{(m)} < \infty\big]`,
-    note: 'The engine runs once per Open-Meteo ensemble member (GFS, N = 31) on a 200 m aggregated grid.',
+    note: 'Weather forecasts come as 31 slightly different futures. We simulate every one and count how many flood each ward.',
   },
 ]
 
 const PARAMS: [string, string, string][] = [
-  ['Grid', '147 × 231 cells, Δx = 100 m (UTM 43N)', 'Copernicus GLO-30 DEM'],
-  ['Depression conditioning', 'Priority-flood, pits kept ≤ 0.5 m', 'Barnes et al. 2014'],
-  ['Drains', '1,031 OSM ways, burned 2 m below ground', 'OpenStreetMap'],
+  ['Grid', '147 × 231 cells, 100 m (or 200 m preview), UTM 43N', 'Copernicus GLO-30 DEM'],
+  ['Pit filling', 'Priority-flood, hollows kept ≤ 0.5 m', 'Barnes et al. 2014'],
+  ['Drains', '1,031 OpenStreetMap ways, cut 2 m into the ground', 'OpenStreetMap'],
   ['Lakes', '116 tanks ≥ 1 ha, 3 m storage, full level = lowest rim point', 'OpenStreetMap'],
-  ['Runoff C / Manning n', 'Area-weighted by land cover', 'ESA WorldCover 2021'],
-  ['Drain intake capacity D', '20 mm/hr (tunable, no public data)', 'Assumption'],
-  ['Ponded infiltration K', '5 mm/hr × pervious fraction', 'Assumption'],
+  ['Runoff C, roughness n', 'Area-weighted from land cover', 'ESA WorldCover 2021'],
+  ['Drain intake D', '20 mm/hr (assumption, tunable)', 'No public data exists'],
+  ['Infiltration K', '5 mm/hr × pervious share', 'Assumption'],
   ['Population', 'Census 2011 ward totals, spread by built-up share', 'datameet / BBMP'],
-  ['Wards', '72 BBMP wards (2012 boundaries) ≥ 50% inside the domain', 'datameet / KGIS'],
+]
+
+const CHECKS = [
+  'Closed basin: error below 10⁻⁹ for every storm',
+  'Depth never goes negative, even on rough terrain',
+  'A still lake stays still — on a test bowl and on the real city with no rain',
+  'Even rain on a flat plain stays even; symmetric ground gives symmetric water',
+  'Drain transfers and infiltration are accounted for exactly',
+  'More blocked drains always means more flooding, never less',
 ]
 
 const LIMITS = [
-  'The DEM is a 30 m surface model averaged to 100 m. Underpasses and street-scale dips are not resolved.',
-  'Storm-drain capacities are not public. D is a single tunable value, and the pipe network is abstracted as "nearest mapped drain".',
-  'Census 2011 population undercounts today’s city. Treat affected-population numbers as relative, not absolute.',
-  'Forecast and reanalysis rain come from 9–25 km model grids and underestimate cloudbursts (ERA5 shows 18.5 mm on 4 Sep 2022 at Bellandur).',
-  'Not calibrated against observed flood depths. This is a decision-support prototype, not an official forecast.',
+  'The elevation data is a 30 m surface model averaged to 100 m, so underpasses and small dips are invisible to it.',
+  'Nobody publishes Bengaluru drain capacities, so that number is an assumption you can change.',
+  'Population is from Census 2011 and undercounts the city today, so treat people counts as comparative.',
+  'Forecast rain is averaged over 9–25 km, which flattens cloudbursts (ERA5 shows just 18.5 mm for 4 Sep 2022 at Bellandur).',
+  'The model has not been calibrated against measured flood depths. It is decision support, not an official forecast.',
 ]
 
 export default function ModelTab({ result }: { result: SimResult | null }) {
   const mb = result?.mass_balance
-  const mbSeries = result
-    ? result.times_min.map((t, i) => ({
-        t: +(t / 60).toFixed(2),
-        rain: mb!.v_in_m3[i] / 1e6,
-        out: mb!.v_out_m3[i] / 1e6,
-        inf: (mb!.v_inf_m3?.[i] ?? 0) / 1e6,
-        stored: (mb!.storage_m3[i] - mb!.storage_m3[0]) / 1e6,
-        err: Math.max(Math.abs(mb!.error[i]), 1e-17),
-        dt: result.dt_s[i] || null,
-      }))
-    : []
+  const data = result ? result.times_min.map((t, i) => ({
+    t: +(t / 60).toFixed(2),
+    rain: mb!.v_in_m3[i] / 1e6,
+    out: mb!.v_out_m3[i] / 1e6,
+    inf: (mb!.v_inf_m3?.[i] ?? 0) / 1e6,
+    stored: (mb!.storage_m3[i] - mb!.storage_m3[0]) / 1e6,
+    err: Math.max(Math.abs(mb!.error[i]), 1e-17),
+    dt: result.dt_s[i] || null,
+  })) : []
 
   return (
-    <div className="h-full overflow-y-auto">
-      <div className="max-w-5xl mx-auto p-6 space-y-6">
-        <header>
-          <h2 className="text-xl font-semibold">The mathematical model</h2>
-          <p className="text-sm text-slate-400 mt-1">
-            A 2-D shallow-water flood model on a real Bengaluru grid. Each 100 m cell exchanges water with its four
-            neighbours; every quantity below is computed in vectorised NumPy each time step.
-          </p>
-        </header>
+    <div className="max-w-5xl mx-auto p-4 space-y-3">
+      <header className="px-1 pt-2">
+        <h2 className="text-[26px] font-semibold tracking-tight">How the model works</h2>
+        <p className="text-[14px] text-ink-2 mt-1 max-w-2xl">
+          FlowShield solves the shallow-water equations over a real map of south-east Bengaluru. Every number in the
+          dashboard comes from this simulation, not from a lookup table.
+        </p>
+      </header>
 
-        <div className="grid gap-3">
-          {STEPS.map((s) => (
-            <div key={s.title} className="rounded-lg border border-slate-700 bg-slate-900/60 p-3">
-              <div className="text-sm font-medium text-sky-300">{s.title}</div>
-              <Eq tex={s.tex} />
-              <p className="text-xs text-slate-400">{s.note}</p>
-            </div>
+      <Section title="In plain words">
+        <ol className="grid sm:grid-cols-2 gap-x-6 gap-y-3">
+          {PLAIN.map(([t, d], i) => (
+            <li key={t} className="flex gap-3">
+              <span className="w-6 h-6 shrink-0 rounded-full bg-accent-soft text-accent grid place-items-center text-[12px] font-semibold num">{i + 1}</span>
+              <div>
+                <div className="text-[13px] font-medium">{t}</div>
+                <div className="text-[12px] text-ink-2 leading-snug">{d}</div>
+              </div>
+            </li>
           ))}
+        </ol>
+      </Section>
+
+      <div className="grid gap-3">
+        {STEPS.map((s) => (
+          <Section key={s.title}>
+            <div className="text-[13px] font-medium text-accent">{s.title}</div>
+            <Eq tex={s.tex} />
+            <p className="text-[12px] text-ink-2">{s.note}</p>
+          </Section>
+        ))}
+      </div>
+
+      {result && (
+        <div className="grid md:grid-cols-2 gap-3">
+          <Section title="Where the water went (million m³)">
+            <p className="text-[12px] text-ink-2 mb-2">
+              Rain in = stored + left the map + soaked in. Largest error this run:{' '}
+              <span className="num text-safe">{mb!.max_abs_error.toExponential(2)}</span>.
+            </p>
+            <ResponsiveContainer width="100%" height={200}>
+              <ComposedChart data={data} margin={{ left: -12, right: 8 }}>
+                <CartesianGrid stroke="var(--color-line)" vertical={false} />
+                <XAxis dataKey="t" unit="h" tick={axisTick} tickLine={false} axisLine={false} />
+                <YAxis tick={axisTick} tickLine={false} axisLine={false} width={44} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(v) => Number(v).toFixed(3)} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Area dataKey="stored" name="still on the ground" stackId="a" fill="#cfe2ff" stroke="#2d7ff9" />
+                <Area dataKey="out" name="left the map" stackId="a" fill="#e6d9fb" stroke="#7c3aed" />
+                <Area dataKey="inf" name="soaked in" stackId="a" fill="#d6f0e4" stroke="#1d9a6c" />
+                <Line dataKey="rain" name="rain that fell" stroke="#1d1d1f" strokeDasharray="4 3" dot={false} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </Section>
+          <Section title="Error and time step">
+            <p className="text-[12px] text-ink-2 mb-2">{result.steps} steps · solver {result.runtime_s}s · {result.cell_m} m cells</p>
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={data} margin={{ left: 0, right: 8 }}>
+                <CartesianGrid stroke="var(--color-line)" vertical={false} />
+                <XAxis dataKey="t" unit="h" tick={axisTick} tickLine={false} axisLine={false} />
+                <YAxis yAxisId="e" scale="log" domain={[1e-17, 1e-6]} allowDataOverflow tick={axisTick}
+                  tickLine={false} axisLine={false} width={52} tickFormatter={(v) => Number(v).toExponential(0)} />
+                <YAxis yAxisId="dt" orientation="right" tick={axisTick} tickLine={false} axisLine={false} width={30} unit="s" />
+                <Tooltip contentStyle={tooltipStyle}
+                  formatter={(v, n) => (n === 'time step' ? `${v} s` : Number(v).toExponential(2))} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Line yAxisId="e" dataKey="err" name="mass-balance error" stroke="#1d9a6c" dot={false} />
+                <Line yAxisId="dt" dataKey="dt" name="time step" stroke="#c07a00" dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </Section>
         </div>
+      )}
 
-        {result && (
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="rounded-lg border border-slate-700 bg-slate-900/60 p-3">
-              <div className="text-sm font-medium">Volume budget for the current run (million m³)</div>
-              <p className="text-xs text-slate-400 mb-2">
-                Rain in = storage change + boundary outflow + infiltration. Max relative error{' '}
-                <span className="font-mono text-emerald-300">{mb!.max_abs_error.toExponential(2)}</span>.
-              </p>
-              <ResponsiveContainer width="100%" height={200}>
-                <ComposedChart data={mbSeries} margin={{ left: -10, right: 8 }}>
-                  <CartesianGrid stroke="#334155" strokeDasharray="3 3" />
-                  <XAxis dataKey="t" unit="h" tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                  <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                  <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #334155', fontSize: 12 }}
-                    formatter={(v) => Number(v).toFixed(3)} />
-                  <Legend wrapperStyle={{ fontSize: 10 }} />
-                  <Area dataKey="stored" name="Δ storage" stackId="a" fill="#38bdf855" stroke="#38bdf8" />
-                  <Area dataKey="out" name="outflow" stackId="a" fill="#a78bfa55" stroke="#a78bfa" />
-                  <Area dataKey="inf" name="infiltration" stackId="a" fill="#34d39955" stroke="#34d399" />
-                  <Line dataKey="rain" name="rain in" stroke="#f8fafc" strokeDasharray="5 3" dot={false} />
-                </ComposedChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="rounded-lg border border-slate-700 bg-slate-900/60 p-3">
-              <div className="text-sm font-medium">Mass-balance error and adaptive time step</div>
-              <p className="text-xs text-slate-400 mb-2">{result.steps} steps · solver time {result.runtime_s}s</p>
-              <ResponsiveContainer width="100%" height={200}>
-                <LineChart data={mbSeries} margin={{ left: 0, right: 8 }}>
-                  <CartesianGrid stroke="#334155" strokeDasharray="3 3" />
-                  <XAxis dataKey="t" unit="h" tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                  <YAxis yAxisId="e" scale="log" domain={[1e-17, 1e-6]} tick={{ fontSize: 10, fill: '#94a3b8' }}
-                    tickFormatter={(v) => Number(v).toExponential(0)} allowDataOverflow />
-                  <YAxis yAxisId="dt" orientation="right" tick={{ fontSize: 10, fill: '#94a3b8' }} unit="s" />
-                  <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #334155', fontSize: 12 }}
-                    formatter={(v, n) => (n === 'Δt' ? `${v} s` : Number(v).toExponential(2))} />
-                  <Legend wrapperStyle={{ fontSize: 10 }} />
-                  <Line yAxisId="e" dataKey="err" name="relative error" stroke="#34d399" dot={false} />
-                  <Line yAxisId="dt" dataKey="dt" name="Δt" stroke="#fbbf24" dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        )}
-
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="rounded-lg border border-slate-700 bg-slate-900/60 p-3">
-            <div className="text-sm font-medium mb-2">Inputs and parameters</div>
-            <table className="w-full text-xs">
-              <tbody>
-                {PARAMS.map(([a, b, c]) => (
-                  <tr key={a} className="border-t border-slate-800">
-                    <td className="py-1 pr-2 text-slate-300">{a}</td><td className="pr-2">{b}</td>
-                    <td className="text-slate-500">{c}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="rounded-lg border border-slate-700 bg-slate-900/60 p-3">
-            <div className="text-sm font-medium mb-2">Verified properties (automated tests)</div>
-            <ul className="text-xs text-slate-300 space-y-1 list-disc pl-4">
-              <li>Closed basin: <M tex="\varepsilon < 10^{-9}" /> for every storm</li>
-              <li>Depth never negative (positivity limiter)</li>
-              <li>Lake at rest stays at rest (well-balanced), on synthetic and real terrain</li>
-              <li>Uniform rain on a flat plane stays uniform; symmetric inputs give symmetric outputs</li>
-              <li>Drain transfer and infiltration are accounted exactly</li>
-              <li>More drainage failure or blocked drains mean more flooding (monotonic response)</li>
+      <div className="grid md:grid-cols-2 gap-3">
+        <Section title="Inputs and settings">
+          <table className="w-full text-[12px]">
+            <tbody>
+              {PARAMS.map(([a, b, c]) => (
+                <tr key={a} className="border-t border-line first:border-0">
+                  <td className="py-1.5 pr-3 text-ink-2 align-top">{a}</td>
+                  <td className="py-1.5 pr-3">{b}</td>
+                  <td className="py-1.5 text-ink-3 align-top">{c}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Section>
+        <div className="space-y-3">
+          <Section title="Automatic checks (12 tests)">
+            <ul className="text-[12px] space-y-1.5">
+              {CHECKS.map((c) => (
+                <li key={c} className="flex gap-2"><span className="text-safe">✓</span>{c}</li>
+              ))}
             </ul>
-            <div className="text-sm font-medium mt-4 mb-2">Assumptions and limitations</div>
-            <ul className="text-xs text-slate-400 space-y-1 list-disc pl-4">
+          </Section>
+          <Section title="What this model cannot do">
+            <ul className="text-[12px] text-ink-2 space-y-1.5 list-disc pl-4">
               {LIMITS.map((l) => <li key={l}>{l}</li>)}
             </ul>
-          </div>
+          </Section>
         </div>
       </div>
     </div>
