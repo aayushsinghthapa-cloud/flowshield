@@ -1,85 +1,102 @@
-# Demo video script (2 min 30 s)
+# Demo video script — 2 minutes
 
-Target 2:30, hard maximum 3:00. Follow the brochure's required order:
-**Rainfall & terrain input → Water-level simulation → Flood progression → Risk classification → Early-warning output.**
+**Target 1:50–2:00. Hard cap 2:00.** ~285 spoken words at a normal pace.
 
-Record at 1600×1000 in a clean browser window (no bookmarks bar, no notifications). Run everything on the
-**Detailed 100 m** grid for the numbers you say out loud. Do one dry run first so the Vercel instance is warm.
+Covers the brochure's required chain in order:
+**rainfall & terrain input → water-level simulation → flood progression → risk
+classification → early-warning output** — plus the three things that actually win marks:
+the blocked-drain what-if, the verified bilingual AI bulletin, and validation against a
+real flood.
+
+Record at 1600×1000, clean browser, **Detailed 100 m** grid for any number you say aloud.
 
 ---
 
-**0:00–0:20 · The problem (screen: map, zoomed on the lake chain)**
+### 0:00–0:12 · Hook
 
-> "Bengaluru's lakes were built as a chain. Each tank spills into the next through storm-water drains. Encroach on
-> those drains and the chain breaks, which is why Bellandur and Ejipura flood every monsoon. FlowShield is a flood
-> simulator built on the real terrain, the real lakes and the real drains of this valley."
+> "Bengaluru's lakes were built as a chain — each tank spills into the next through storm
+> drains. Build over those drains, and the city floods. FlowShield simulates exactly that,
+> on the real city."
 
-**0:20–0:40 · Inputs (screen: left panel, then the map layers)**
+*Screen: map, zoomed on the Madiwala → Agara → Bellandur → Varthur chain.*
 
-> "The city is cut into 100-metre squares. Each one carries satellite elevation, satellite land cover, 1,031
-> OpenStreetMap drains, 116 lakes, and 72 real BBMP wards with Census population. Pick a storm — or type one in
-> plain English."
+### 0:12–0:25 · Inputs ①
 
-Click **Heavy storm**. Point at the drain lines and the lakes.
+> "Real terrain from Copernicus satellite elevation, ESA land cover, one thousand and
+> thirty-one OpenStreetMap storm drains, a hundred and sixteen lakes, and seventy-two BBMP
+> wards with Census population. Pick a storm — or type one in plain English."
 
-**0:40–1:15 · Simulation and progression (screen: press play)**
+*Click **Heavy storm**. Sweep the cursor over the blue drain lines.*
 
-> "Press play. Rain falls, concrete sheds it, drains carry what they can, and the rest flows downhill through the
-> shallow-water equations. Watch the tanks fill — Madiwala, Agara, Bellandur — and spill into each other."
+### 0:25–0:45 · Simulation and progression ②③
 
-Let the animation run. Point at the lake cascade bars filling.
+> "Press play. Rain falls, concrete sheds it, the drains carry what they can, and the rest
+> flows downhill through the shallow-water equations. Watch Madiwala fill, spill into
+> Agara, then Bellandur — the historic chain, reproduced. Water is conserved to one part
+> in ten-to-the-fourteen."
 
-**1:15–1:35 · Risk classification (screen: right panel)**
+*Press play. Point at the **Lake cascade** bars filling in order.*
 
-> "Fifteen centimetres is hard to walk through; thirty can float a car. FlowShield turns depth into a verdict:
-> five wards go critical, Bharathi Nagar first, two hours after the rain starts, with twenty-three thousand people
-> in deep water."
+### 0:45–1:00 · Risk classification ④
 
-**1:35–1:55 · The what-if (screen: block a drain, then Compare)**
+> "Fifteen centimetres of moving water knocks you over; thirty floats a car. Five wards go
+> critical — Bharathi Nagar first, two hours in — thirty-eight thousand people at risk.
+> You can see exactly how long you have."
 
-> "Now block one real drain near Ejipura and run it again."
+*Screen: the verdict and the ward list with ETAs.*
 
-Click **Block a drain**, click the drain, **Run**, open **Compare**.
+### 1:00–1:20 · The what-if — **your strongest 20 seconds**
 
-> "Ejipura goes from safe to critical in two hours twelve, and three times as many people are affected. That is the
-> cost of one encroached channel, quantified."
+> "Now block one real, mapped drain near Ejipura, and run it again. Ejipura goes from safe
+> to critical in two hours twelve. Three times as many people. That is the cost of one
+> encroachment, quantified — and no dashboard can tell you that."
 
-**1:55–2:15 · Live forecast and early warning (screen: live panel, then bulletin)**
+*Click **Block a drain** → click the drain → **Run** → open **Compare**.*
 
-> "It also runs on the real forecast. Thirty-one forecast members give each ward a probability of flooding tonight.
-> And Gemini turns the result into an advisory for officials and a public alert in English and Kannada — every
-> number checked against the simulation before it is shown."
+### 1:20–1:40 · Early warning ⑤ + the AI
 
-Show the ✓ verified badge and switch to the ಕನ್ನಡ tab.
+> "It runs on tonight's real forecast too. And the AI writes the bulletin — what officials
+> should do, and a public alert in English and Kannada. Every number is checked against
+> the simulation before it appears: fifteen verified here. Nothing is pre-written."
 
-**2:15–2:30 · The maths and the close (screen: Model tab)**
+*Point at the **✓ numbers verified** badge, then switch to the **ಕನ್ನಡ** tab.*
 
-> "Under the hood: the local-inertial shallow-water equations, an adaptive time step, and a water budget that
-> closes to one part in ten-to-the-fourteen. And we checked it against the real September 2022 flood: given that
-> night's rainfall, it finds nine of the ten places Bengaluru reported under water. FlowShield: predict the flood,
+### 1:40–2:00 · Validation and close
+
+> "And we tested it against real floods. September 2022 — given that night's rainfall, it
+> finds nine of the ten places Bengaluru reported under water. October 2022, a
+> street-scale event, it misses — and we say so, on screen. FlowShield: predict the flood,
 > protect the future."
 
-Scroll to **Checked against a real flood** on the Model tab while saying this. If a judge pushes on accuracy, the
-honest answer is in the same card: it over-predicts how far flooding spreads, so the ward *ranking* is what to
-trust, not the headcount.
+*Screen: Model tab → **Checked against a real flood**, then the amber panel below it.*
 
 ---
 
-## Checklist before recording
-- [ ] Detailed 100 m grid selected
-- [ ] Live URL warm (open it once, run one simulation)
-- [ ] Dismiss the "How to read this" intro once, so it does not pop up mid-take
-      (or leave it for the opening shot on purpose — it explains the dashboard well)
-- [ ] Gemini key working (generate **one** bulletin as a test, no more)
+## Deliberately cut
 
-> **Gemini free-tier quota — read this before rehearsing.** Every bulletin is a live
-> call, and the free tier allows **20 requests per day per model**. The backend falls
-> back through seven Flash models, so the budget is roughly 140 calls a day, but they do
-> not refill until **00:00 Pacific (12:30 PM IST)**. Each exhausted model also adds a
-> second or so to the call while the chain walks past it, so a spent budget makes the AI
-> feel slow before it fails outright. Rehearse the AI steps a handful of times, not
-> dozens. If it does run out, the panel says so in plain words — honest behaviour, since
-> nothing is cached by design, but not what you want on camera.
-- [ ] Kannada text reviewed by a Kannada reader
-- [ ] Browser zoom 100%, window 1600×1000
-- [ ] Video is 2:00–3:00, link works in an incognito window
+Say these only if a judge asks — they cost 15–20 s each and the points are already banked:
+the 31-member ensemble probability map, the Model tab equations, CSV export and share
+links, the mobile layout, and the natural-language scenario box (the AI is already
+evidenced by the bulletin).
+
+## Before you record
+
+- [ ] **Detailed 100 m** grid selected
+- [ ] Site opened once and one simulation run, so Vercel is warm (cold start ≈ 7 s)
+- [ ] "How to read this" dismissed, so it cannot pop up mid-take
+- [ ] Kannada reviewed by your Kannada reader
+- [ ] Browser zoom 100%, no bookmarks bar, notifications off
+- [ ] Final video is **under 2:00** and the link opens in an incognito window
+
+> **The bulletin takes 8–20 s.** Do not film dead air: click **Write with AI**, keep
+> talking over the sentence about the grounding check, and cut back when the green badge
+> lands. The free tier allows 20 calls per day per model, so rehearse the AI a handful of
+> times, not dozens.
+
+## If a judge pushes on accuracy
+
+> "It's skilful at catchment-scale flooding and it cannot resolve a single flooded
+> underpass — that's in the Model tab. We also tried calibrating our way out of it and
+> reported that it didn't work."
+
+Owning the limitation scores better than overclaiming, and it is already on screen.
