@@ -81,7 +81,7 @@ export default function InsightsPanel({ result: r, recordIdx, selectedWard, onSe
           <ComposedChart data={series} margin={{ left: -14, right: 4, top: 4, bottom: 0 }}>
             <CartesianGrid stroke="var(--color-line)" vertical={false} />
             <XAxis dataKey="t" tick={axisTick} unit="h" tickLine={false} axisLine={false} />
-            <YAxis yAxisId="p" tick={axisTick} tickLine={false} axisLine={false} width={40} tickCount={4}
+            <YAxis yAxisId="p" tick={axisTick} tickLine={false} axisLine={false} width={48} tickCount={4}
               allowDecimals={false} tickFormatter={(v) => (v >= 1000 ? `${Math.round(v / 1000)}k` : `${v}`)} />
             <YAxis yAxisId="r" orientation="right" tick={axisTick} tickLine={false} axisLine={false} width={28}
               tickCount={4} allowDecimals={false} unit=" mm" />
