@@ -67,12 +67,14 @@ Show the ✓ verified badge and switch to the ಕನ್ನಡ tab.
       (or leave it for the opening shot on purpose — it explains the dashboard well)
 - [ ] Gemini key working (generate **one** bulletin as a test, no more)
 
-> **Gemini free-tier quota.** Each bulletin is a live call and the free tier is
-> limited per minute. Do not click "Write with AI" repeatedly while rehearsing: if the
-> quota runs out, every model in the fallback chain returns 429 and the panel shows a
-> plain "quota exhausted, wait a minute" message. That is honest behaviour, not a bug —
-> nothing is cached, by design — but it is not what you want on camera. Leave a minute
-> between bulletin calls, and generate the one you film on the take itself.
+> **Gemini free-tier quota — read this before rehearsing.** Every bulletin is a live
+> call, and the free tier allows **20 requests per day per model**. The backend falls
+> back through seven Flash models, so the budget is roughly 140 calls a day, but they do
+> not refill until **00:00 Pacific (12:30 PM IST)**. Each exhausted model also adds a
+> second or so to the call while the chain walks past it, so a spent budget makes the AI
+> feel slow before it fails outright. Rehearse the AI steps a handful of times, not
+> dozens. If it does run out, the panel says so in plain words — honest behaviour, since
+> nothing is cached by design, but not what you want on camera.
 - [ ] Kannada text reviewed by a Kannada reader
 - [ ] Browser zoom 100%, window 1600×1000
 - [ ] Video is 2:00–3:00, link works in an incognito window
