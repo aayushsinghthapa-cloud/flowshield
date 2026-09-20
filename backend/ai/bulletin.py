@@ -26,6 +26,9 @@ Hard rules:
 - Use ONLY the facts in the JSON. Copy numbers exactly as written there (same units and rounding).
   Do not compute new numbers, add rainfall figures, or invent places, shelters or phone numbers.
 - The only phone numbers you may mention are those in "helplines".
+- Times are RELATIVE, counted from the start of the rain. Quote them exactly as written
+  ("1 h 55 min"). Never turn one into a clock time or a date: the run is a scenario, not
+  a forecast pinned to a wall clock, so "by 09:16 IST" would be a number you invented.
 - If no ward reaches critical, say so plainly and keep severity at ALL CLEAR or WATCH.
 - Order advice by ETA (earliest first). Mention that this is a model-based estimate.
 - Public alerts: calm, clear, actionable (avoid underpasses, move vehicles, keep away from drains)."""
