@@ -180,3 +180,11 @@ Roles (3–4): **Model lead** (pipeline + engine + tests + model.md, owns the ma
 - https://flowshield-iota.vercel.app — dashboard, API, Gemini and Open-Meteo all verified live from a headless browser.
 - Vercel CPU is ~4x slower than the dev Mac (12 h at 100 m: 7 s local → 25 s live). Added a **200 m fast-preview grid** (default): 8x fewer cells, 4.2 s live, with a UI note that ward detail is coarser. Replaced h^(7/3) with h·h·∛h in the friction term.
 - Live timings: preview run 4.2 s · detailed run 25 s · 31-member ensemble 39 s (4 parallel batches, now 8) · AI bulletin 12 s with 10/10 numbers verified.
+
+**20 Sep 03:30–10:30 · Redesign and completeness pass**
+- **New design system** (light, Apple-like): tokens in `index.css`, shared primitives in `ui.tsx`, Esri Light Gray basemap, restrained accent + status colours, minimal charts (no vertical grids, thin axes, unified tooltips).
+- **Right panel rebuilt around the decision**: verdict headline ("26 wards flood · first Bharathi Nagar in 2h 32m · 1.4 lakh at risk"), people-over-time with rain, ward list with search and per-ward depth curve, live lake-cascade bars, bulletin. Technical detail (mass balance, Δt) moved to the Model tab.
+- **Model tab** now opens with a plain-words explanation before the equations.
+- Added: whole-scenario presets incl. **Sept 2022-style reconstruction**, shareable URL state, ward CSV export, ward hover tooltips, keyboard playback (space/arrows), first-visit help sheet, favicon + OG tags, **mobile layout** (map + verdict stack, controls in a sheet).
+- Fixed: Tailwind v4 cannot `@apply` custom classes (expanded `.btn`/`.chip` groups), duplicate setup panel double-fetching the forecast, out-of-order chart ticks, slider fill track, legend overlapping the scale bar, clipped six-figure axis labels.
+- Docs: `docs/HOW-IT-WORKS.md` (jargon-free explainer of model + every UI panel) and `docs/demo-script.md` (2:30 script in the brochure's required order).
