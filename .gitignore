@@ -8,3 +8,6 @@ backend/pipeline/cache/
 .DS_Store
 .pytest_cache/
 *.pdf
+
+# Local Claude Code settings
+.claude/
