@@ -11,9 +11,7 @@ Before you press record: open the site, run one storm so it is warm, switch the 
 ## 1 · The problem · 0:00 to 0:12
 
 **SAY**
-> Bengaluru's lakes were built as a chain. When one fills up, it spills into the next
-> through a drain. But people built on top of those drains. So now the water ends up
-> in homes.
+> Bengaluru's lakes were built as a chain. When one fills up, it spills into the next through a drain. But people built on top of those drains. So now the water ends up in homes.
 
 **DO**
 Start on the map, zoomed so Madiwala, Agara, Bellandur and Varthur are all visible.
